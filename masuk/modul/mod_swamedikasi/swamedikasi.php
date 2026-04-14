@@ -10,7 +10,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 	echo "<div class='error msg'>Untuk mengakses Modul anda harus login.</div>";
 } else {
 
-	$aksi = "modul/mod_swamedikasi/aksi_swamedikasi.php";
+	$aksi = "modul/mod_swamedikasi/aksi_pelanggan.php";
 // 	$aksi_pelanggan = "masuk/modul/mod_pelanggan/aksi_pelanggan.php";
 	switch (isset($_GET['act']) ? $_GET['act'] : '') {
 			// Tampil Siswa
@@ -44,6 +44,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 						<thead>
 							<tr>
         						<th>No</th>
+        						<th>Pelanggan</th>
         						<th>Tanggal</th>
         						<th>Diagnosa</th>
         						<th>Tindakan</th>
@@ -67,7 +68,10 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
             			}
             			$token = $_SESSION['csrf_pelanggan'];
 			
-						$stmt = $db->prepare("SELECT * FROM riwayat_pelanggan ORDER BY tgl DESC");
+						$stmt = $db->prepare("SELECT rp.*, p.nm_pelanggan
+							FROM riwayat_pelanggan rp
+							LEFT JOIN pelanggan p ON p.id_pelanggan = rp.id_pelanggan
+							ORDER BY rp.tgl DESC");
             			$stmt->execute();
             			$riwayat = $stmt->fetchAll(PDO::FETCH_ASSOC);
             			$riwayat_ids = array_map(function($x){ return (int)$x['id']; }, $riwayat);
@@ -89,12 +93,14 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
             			}
             			$no = 1;
             			foreach($riwayat as $rw){
+					$nama_pelanggan = isset($rw['nm_pelanggan']) && $rw['nm_pelanggan'] !== '' ? htmlspecialchars($rw['nm_pelanggan']) : '-';
             				$edit_link = "?module=swamedikasi&act=edit_riwayat&idr=".$rw['id'];
             				$delete_link = $aksi."?module=swamedikasi&act=hapus_riwayat&id=".$rw['id']."&token=".$token;
             				$obat_tindakan = isset($obat_map[$rw['id']]) ? implode("<br>", $obat_map[$rw['id']]) : htmlspecialchars($rw['tindakan']);
             				$tgl_followup = (isset($rw['tgl_followup']))? $rw['tgl_followup']:'<button type="button" data-id="'.$rw['id'].'" class="tgl_followup btn btn-danger">Klik untuk followup</button>';
             				echo "<tr>
             					<td>$no</td>
+					<td>$nama_pelanggan</td>
             					<td>$rw[tgl]</td>
             					<td>$rw[diagnosa]</td>
             					<td>$obat_tindakan</td>
@@ -390,15 +396,38 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 		</div>";
 			break;
 		case "edit_riwayat":
-			$idr = intval($_GET['idr']);
-			$stmt = $db->prepare("SELECT * FROM riwayat_pelanggan WHERE id = ? AND id_pelanggan = ?");
-			$stmt->execute([$idr, $_GET['id']]);
+			$idr = isset($_GET['idr']) ? intval($_GET['idr']) : 0;
+			$id_pelanggan = isset($_GET['id']) ? intval($_GET['id']) : 0;
+			$redirect_to = function ($url) {
+				if (!headers_sent()) {
+					header('location:'.$url);
+				} else {
+					echo "<script>window.location='".htmlspecialchars($url, ENT_QUOTES, 'UTF-8')."';</script>";
+				}
+				exit;
+			};
+			if ($idr <= 0) {
+				$_SESSION['flash'] = "<div class='alert alert-danger'>Data riwayat tidak valid.</div>";
+				$redirect_to('../../media_admin.php?module=swamedikasi');
+			}
+
+			if ($id_pelanggan > 0) {
+				$stmt = $db->prepare("SELECT * FROM riwayat_pelanggan WHERE id = ? AND id_pelanggan = ?");
+				$stmt->execute([$idr, $id_pelanggan]);
+			} else {
+				$stmt = $db->prepare("SELECT * FROM riwayat_pelanggan WHERE id = ?");
+				$stmt->execute([$idr]);
+			}
 			if ($stmt->rowCount() < 1) {
 				$_SESSION['flash'] = "<div class='alert alert-danger'>Riwayat tidak ditemukan.</div>";
-				header('location:../../media_admin.php?module=pelanggan&act=riwayat&id='.$_GET['id']);
-				exit;
+				if ($id_pelanggan > 0) {
+					$redirect_to('../../media_admin.php?module=pelanggan&act=riwayat&id='.$id_pelanggan);
+				} else {
+					$redirect_to('../../media_admin.php?module=swamedikasi');
+				}
 			}
 			$rw = $stmt->fetch(PDO::FETCH_ASSOC);
+			$id_pelanggan = isset($rw['id_pelanggan']) ? intval($rw['id_pelanggan']) : $id_pelanggan;
 			$token = isset($_SESSION['csrf_pelanggan']) ? $_SESSION['csrf_pelanggan'] : '';
 			$has_riwayat_obat_table = ($db->query("SHOW TABLES LIKE 'riwayat_pelanggan_obat'")->rowCount() > 0);
 			$riwayat_obat = [];
@@ -422,7 +451,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 			}
 			echo "
 			<form method=POST action='$aksi?module=pelanggan&act=update_riwayat' enctype='multipart/form-data' class='form-horizontal'>
-				<input type=hidden name='id_pelanggan' value='$_GET[id]'>
+				<input type=hidden name='id_pelanggan' value='".$id_pelanggan."'>
 				<input type=hidden name='id_riwayat' value='".$rw['id']."'>
 				<input type=hidden name='token' value='".$token."'>
 				<div class='form-group'>

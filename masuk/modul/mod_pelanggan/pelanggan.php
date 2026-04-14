@@ -31,13 +31,14 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 				</div>
 				<div class="box-body table-responsive">
 					<a class='btn  btn-success btn-flat' href='?module=pelanggan&act=tambah'>TAMBAH</a>
-					<a class='btn btn-primary btn-flat' href='?module=konseling'>KONSELING</a>
-					<a class='btn btn-warning btn-flat' href='?module=meso'>MESO</a>
-					<a class='btn btn-danger btn-flat' href='?module=pio'>PIO</a>
-					<a class='btn btn-default btn-flat' href='?module=pto'>PTO</a>
-					<a class='btn btn-success btn-flat' href='?module=cpp'>CATATAN PENGOBATAN PASIEN (CPP)</a>
-					<a class='btn btn-info btn-flat' href='?module=homecare'>HOME CARE </a>
-					<a class='btn btn-info btn-flat' href='?module=swamedikasi'>SWAMEDIKASI </a>
+					<a class='btn btn-primary btn-flat' href='?module=konseling' target='_blank'>KONSELING</a>
+					<a class='btn btn-warning btn-flat' href='?module=meso' target='_blank'>MESO</a>
+					<a class='btn btn-danger btn-flat' href='?module=pio' target='_blank'>PIO</a>
+					<a class='btn btn-default btn-flat' href='?module=pto' target='_blank'>PTO</a>
+					<a class='btn btn-success btn-flat' href='?module=cpp' target='_blank'>CATATAN PENGOBATAN PASIEN (CPP)</a>
+					<a class='btn btn-info btn-flat' href='?module=homecare' target='_blank'>HOME CARE </a>
+					<a class='btn btn-info btn-flat' href='?module=swamedikasi' target='_blank'>SWAMEDIKASI </a>
+					<a class='btn btn-info btn-flat' href='?module=cekdarah' target='_blank'>CEK DARAH</a>
 					<br><br>
 
 

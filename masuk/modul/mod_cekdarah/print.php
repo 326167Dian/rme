@@ -37,7 +37,7 @@ $pdf->Cell(6.5, 0.4, $rh['tiga'], 0, 1, 'C');
 $pdf->Cell(6.5, 0.3, $rh['empat'], 0, 1, 'C');
 $pdf->Cell(6.5, 0.3, $rh['lima'], 0, 1, 'C');
 $pdf->Cell(6.5, 0.3, $rh['enam'], 0, 1, 'C');
-$pdf->Cell(6.5, 0.5, $rh['tujuh'], 0, 1, 'C');
+$pdf->Cell(6.5, 0.5,'', 0, 1, 'C');
 
 $pdf->ln(0.1);
 $pdf->SetFont('Arial','B', 11);
