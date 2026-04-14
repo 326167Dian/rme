@@ -27,7 +27,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 				</div>
 				<div class="box-body table-responsive">
 					<a class='btn  btn-success btn-flat' href='?module=barang&act=tambah'>TAMBAH</a>
-					<?php
+					<!-- <?php
 
 					$lupa = $_SESSION['level'];
 					if ($lupa == 'pemilik') {
@@ -39,15 +39,15 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					}
 
 
-					?>
+					?> -->
 
-					<hr>
+					<!-- <hr>
 					<CENTER><strong>MySIFA PROFIT ANALYSIS</strong></CENTER><br>
 					<center><button type="button" class="btn btn-info">PROFIT>30%</button>
 						<button type="button" class="btn btn-success">PROFIT = 25 - 30 % </button>
 						<button type="button" class="btn btn-warning">PROFIT = 20 - 25%"</button>
 						<button type="button" class="btn btn-danger">PROFIT < 20% </button>
-					</center>
+					</center> -->
 					<br><br>
 
 
