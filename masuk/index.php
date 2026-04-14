@@ -43,7 +43,7 @@ if (!empty($_SESSION['namauser']) and !empty($_SESSION['passuser'])) {
 
     <div class="login-box-body">
       <div class="container-fluid text-center">
-        <img align="center" src="images/logo.png" width="100%">
+        <img align="center" src="images/MySIFARME.png" width="100%">
         <?php
         $nama_apotek = $db->query("SELECT * from setheader ");
         $r = $nama_apotek->fetch(PDO::FETCH_ASSOC);

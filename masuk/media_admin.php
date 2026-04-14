@@ -84,7 +84,7 @@ if ($_SESSION['login'] == 0) {
 				});
 			</script>
 
-			<link rel="shortcut icon" type="image/x-icon" href="images/lp3i.png">
+			<link rel="shortcut icon" type="image/x-icon" href="images/mysifalogokecil.png">
 		</head>
 
 		<body class="hold-transition skin-blue-light sidebar-mini">
@@ -132,7 +132,7 @@ if ($_SESSION['login'] == 0) {
 								</li>
 								<li class="dropdown user user-menu">
 									<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-										<img src="dist/images/mysifalogokecil.png" class="user-image" alt="User Image">
+										<img src="dist/images/mysifalogokecil.png" class="user-image" alt="User Image" width="100%">
 										<span class="hidden-xs">
 											<?php echo $_SESSION['namauser']; ?>
 										</span>
