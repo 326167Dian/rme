@@ -64,7 +64,7 @@ if ($_GET['module'] == 'home') {
             <div class="col-md-12">
                 <div class="box box-primary" style="margin:20px;">
                     <div class="box-header with-border">
-                        <h3 class="box-title" id="sales-chart-title">Penjualan <?php echo date('F Y'); ?></h3>
+                        <h3 class="box-title" id="sales-chart-title">Grafik Swamedikasi <?php echo date('F Y'); ?></h3>
                         <div class="box-tools pull-right">
                             <select id="sales-filter-month" class="form-control input-sm" style="display:inline-block; width:auto; margin-right:6px;">
                                 <?php for ($m = 1; $m <= 12; $m++) { ?>
@@ -87,7 +87,7 @@ if ($_GET['module'] == 'home') {
                             <div class="col-sm-4">
                                 <div class="small-box bg-aqua" style="margin-bottom:10px;">
                                     <div class="inner">
-                                        <p style="margin:0;">Total Bulan Dipilih</p>
+                                        <p style="margin:0;">Total Swamedikasi Bulan Dipilih</p>
                                         <h4 id="sales-total-current" style="margin:4px 0 0 0;">0</h4>
                                     </div>
                                 </div>
@@ -95,7 +95,7 @@ if ($_GET['module'] == 'home') {
                             <div class="col-sm-4">
                                 <div class="small-box bg-yellow" style="margin-bottom:10px;">
                                     <div class="inner">
-                                        <p style="margin:0;">Total Bulan Lalu</p>
+                                        <p style="margin:0;">Total Swamedikasi Bulan Lalu</p>
                                         <h4 id="sales-total-previous" style="margin:4px 0 0 0;">0</h4>
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@ if ($_GET['module'] == 'home') {
                 var salesChartPreviousLabel = 'Bulan Lalu';
                 var salesChartResizeTimer = null;
 
-                function formatRupiahChart(angka) {
+                function formatNumberChart(angka) {
                     var nilai = parseFloat(angka || 0).toFixed(0).toString();
                     return nilai.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                 }
@@ -131,11 +131,11 @@ if ($_GET['module'] == 'home') {
                     var totalPrevious = 0;
 
                     for (var i = 0; i < currentItems.length; i++) {
-                        totalCurrent += parseFloat(currentItems[i].total_penjualan || 0);
+                        totalCurrent += parseFloat(currentItems[i].total_swamedikasi || 0);
                     }
 
                     for (var j = 0; j < previousItems.length; j++) {
-                        totalPrevious += parseFloat(previousItems[j].total_penjualan || 0);
+                        totalPrevious += parseFloat(previousItems[j].total_swamedikasi || 0);
                     }
 
                     var growth = 0;
@@ -153,15 +153,15 @@ if ($_GET['module'] == 'home') {
                         growthClass = 'bg-yellow';
                     }
 
-                    $('#sales-total-current').text(formatRupiahChart(totalCurrent));
-                    $('#sales-total-previous').text(formatRupiahChart(totalPrevious));
+                    $('#sales-total-current').text(formatNumberChart(totalCurrent));
+                    $('#sales-total-previous').text(formatNumberChart(totalPrevious));
                     $('#sales-total-growth').text(growthLabel);
                     $('#sales-total-growth').closest('.small-box').removeClass('bg-green bg-red bg-yellow').addClass(growthClass);
                 }
 
                 function renderSalesChart(items, previousItems, previousLabel) {
                     if (!items || items.length === 0) {
-                        $('#sales-chart').html('<div class="text-warning">Belum ada data penjualan pada tabel trkasir.</div>');
+                        $('#sales-chart').html('<div class="text-warning">Belum ada data swamedikasi pada tabel riwayat_pelanggan.</div>');
                         return;
                     }
 
@@ -172,13 +172,13 @@ if ($_GET['module'] == 'home') {
                     var ticks = [];
 
                     for (var i = 0; i < items.length; i++) {
-                        var total = parseFloat(items[i].total_penjualan || 0);
+                        var total = parseFloat(items[i].total_swamedikasi || 0);
                         var totalPrevious = 0;
                         if (previousItems && previousItems[i]) {
-                            totalPrevious = parseFloat(previousItems[i].total_penjualan || 0);
+                            totalPrevious = parseFloat(previousItems[i].total_swamedikasi || 0);
                         }
 
-                        var tanggalPenuh = items[i].tgl_trkasir || '';
+                        var tanggalPenuh = items[i].tgl || '';
                         var labelHari = tanggalPenuh;
 
                         if (tanggalPenuh.indexOf('-') > -1) {
@@ -194,7 +194,7 @@ if ($_GET['module'] == 'home') {
                     }
 
                     var plot = $.plot('#sales-chart', [{
-                        label: 'Bulan Dipilih',
+                        label: 'Jumlah Swamedikasi',
                         data: chartData,
                         lines: {
                             show: true,
@@ -236,7 +236,7 @@ if ($_GET['module'] == 'home') {
                         yaxis: {
                             min: 0,
                             tickFormatter: function(value) {
-                                return formatRupiahChart(value);
+                                return formatNumberChart(value);
                             }
                         }
                     });
@@ -252,7 +252,7 @@ if ($_GET['module'] == 'home') {
                     for (var j = 0; j < chartData.length; j++) {
                         var point = chartData[j];
                         var offset = plot.pointOffset({ x: point[0], y: point[1] });
-                        var labelHtml = '<div class="point-value-label" style="position:absolute;left:' + (offset.left - 18) + 'px;top:' + (offset.top - 22) + 'px;font-size:11px;color:#333;background:#fff;padding:1px 4px;border:1px solid #d2d6de;border-radius:3px;white-space:nowrap;">' + formatRupiahChart(point[1]) + '</div>';
+                        var labelHtml = '<div class="point-value-label" style="position:absolute;left:' + (offset.left - 18) + 'px;top:' + (offset.top - 22) + 'px;font-size:11px;color:#333;background:#fff;padding:1px 4px;border:1px solid #d2d6de;border-radius:3px;white-space:nowrap;">' + formatNumberChart(point[1]) + '</div>';
                         $chart.append(labelHtml);
                     }
                 }
@@ -277,7 +277,7 @@ if ($_GET['module'] == 'home') {
                         cache: false,
                         success: function(response) {
                             if (!response.status) {
-                                $('#sales-chart').html('<div class="text-danger">Data penjualan tidak tersedia.</div>');
+                                $('#sales-chart').html('<div class="text-danger">Data swamedikasi tidak tersedia.</div>');
                                 $('#sales-chart-updated').text(response.message || 'Gagal membaca data');
                                 return;
                             }
@@ -288,7 +288,7 @@ if ($_GET['module'] == 'home') {
                             renderSalesChart(salesChartItems, salesChartPreviousItems, salesChartPreviousLabel);
                             updateSalesSummary(salesChartItems, salesChartPreviousItems);
                             if (response.periode_label) {
-                                var title = 'Penjualan ' + response.periode_label;
+                                var title = 'Grafik Swamedikasi ' + response.periode_label;
                                 if (response.periode_sebelumnya_label) {
                                     title += ' vs ' + response.periode_sebelumnya_label;
                                 }

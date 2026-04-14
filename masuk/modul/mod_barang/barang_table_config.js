@@ -167,7 +167,7 @@ $(document).ready(function() {
 		indikasiModalData.id_barang = idBarang;
 		var indikasiHtml = indikasiModalData.indikasi || '';
 		if (!indikasiHtml) {
-			var cellHtml = table.cell(rowEl, 5).data() || '';
+			var cellHtml = table.cell(rowEl, 3).data() || '';
 			var temp = $('<div>').html(cellHtml);
 			temp.find('.btn-edit-indikasi').remove();
 			indikasiHtml = temp.html();

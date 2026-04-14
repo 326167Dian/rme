@@ -50,11 +50,11 @@ try {
     $awalBulanSebelumnya = date('Y-m-01', strtotime($awalBulan . ' -1 month'));
     $akhirBulanSebelumnya = date('Y-m-t', strtotime($awalBulanSebelumnya));
 
-    $sql = "SELECT tgl_trkasir, SUM(ttl_trkasir) AS total_penjualan
-            FROM trkasir
-            WHERE tgl_trkasir BETWEEN :awal_bulan AND :akhir_periode
-            GROUP BY tgl_trkasir
-            ORDER BY tgl_trkasir ASC";
+    $sql = "SELECT tgl, COUNT(*) AS total_swamedikasi
+            FROM riwayat_pelanggan
+            WHERE tgl BETWEEN :awal_bulan AND :akhir_periode
+            GROUP BY tgl
+            ORDER BY tgl ASC";
 
     $stmt = $db->prepare($sql);
     $stmt->execute([
@@ -66,15 +66,15 @@ try {
 
     $mapPenjualan = [];
     foreach ($rows as $row) {
-        $tanggal = $row['tgl_trkasir'];
-        $mapPenjualan[$tanggal] = (float)$row['total_penjualan'];
+        $tanggal = $row['tgl'];
+        $mapPenjualan[$tanggal] = (int)$row['total_swamedikasi'];
     }
 
-    $sqlPrev = "SELECT tgl_trkasir, SUM(ttl_trkasir) AS total_penjualan
-                FROM trkasir
-                WHERE tgl_trkasir BETWEEN :awal_prev AND :akhir_prev
-                GROUP BY tgl_trkasir
-                ORDER BY tgl_trkasir ASC";
+    $sqlPrev = "SELECT tgl, COUNT(*) AS total_swamedikasi
+                FROM riwayat_pelanggan
+                WHERE tgl BETWEEN :awal_prev AND :akhir_prev
+                GROUP BY tgl
+                ORDER BY tgl ASC";
 
     $stmtPrev = $db->prepare($sqlPrev);
     $stmtPrev->execute([
@@ -85,8 +85,8 @@ try {
     $rowsPrev = $stmtPrev->fetchAll(PDO::FETCH_ASSOC);
     $mapPenjualanPrevByHari = [];
     foreach ($rowsPrev as $rowPrev) {
-        $hari = date('d', strtotime($rowPrev['tgl_trkasir']));
-        $mapPenjualanPrevByHari[$hari] = (float)$rowPrev['total_penjualan'];
+        $hari = date('d', strtotime($rowPrev['tgl']));
+        $mapPenjualanPrevByHari[$hari] = (int)$rowPrev['total_swamedikasi'];
     }
 
     $dataHarian = [];
@@ -105,13 +105,13 @@ try {
         }
 
         $dataHarian[] = [
-            'tgl_trkasir' => $tanggalLoop,
-            'total_penjualan' => $total
+            'tgl' => $tanggalLoop,
+            'total_swamedikasi' => $total
         ];
 
         $dataBulanLalu[] = [
             'hari' => $hariLoop,
-            'total_penjualan' => $totalPrev
+            'total_swamedikasi' => $totalPrev
         ];
 
         $tanggalLoop = date('Y-m-d', strtotime($tanggalLoop . ' +1 day'));
@@ -129,6 +129,6 @@ try {
     http_response_code(500);
     echo json_encode([
         'status' => false,
-        'message' => 'Gagal memuat data penjualan'
+        'message' => 'Gagal memuat data swamedikasi'
     ]);
 }
