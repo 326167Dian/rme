@@ -58,7 +58,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 								<th>No</th>
 								<th>Nama Barang</th>
 								<th style="text-align: right; ">Zat Aktif</th>
-								<th style="text-align: center; ">Komposisi dan Indikasi</th>
+								<th style="text-align: center; ">Terapi</th>
 								<!-- <th style='white-space:nowrap; width:95px; min-width:95px;'>Aksi</th> -->
 							</tr>
 						</thead>

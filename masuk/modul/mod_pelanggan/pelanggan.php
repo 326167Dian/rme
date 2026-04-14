@@ -601,11 +601,6 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
                             <th style="vertical-align: middle; background-color: #008000; text-align: center; ">No</th>
                             <th style="vertical-align: middle; background-color: #008000; text-align: left; ">Kode</th>
                             <th style="vertical-align: middle; background-color: #008000; text-align: left; ">Nama Barang</th>
-                            <th style="vertical-align: middle; background-color: #008000; text-align: right; ">Qty</th>
-                            <th style="vertical-align: middle; background-color: #008000; text-align: center; ">Satuan</th>
-                            <th style="vertical-align: middle; background-color: #008000; text-align: center; ">Harga Beli</th>
-                            <th style="vertical-align: middle; background-color: #008000; text-align: center; width: 50px">Harga Jual</th>
-                            <th style="vertical-align: middle; background-color: #008000; text-align: center; ">Komisi</th>
                             <th style="vertical-align: middle; background-color: #008000; text-align: center; ">Komposisi</th>
                             <th style="vertical-align: middle; background-color: #008000; text-align: center; ">Pilih</th>
                         </tr>
@@ -648,26 +643,6 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
                 "dataType": "JSON",
                 "type": "POST"
             },
-            "rowCallback": function(row, data, index) {
-                let q = (data['hrgjual_barang'] - data['hrgsat_barang']) / data['hrgsat_barang'];
-    
-                if (q <= 0.2) {
-                    $(row).find('td:eq(6)').css('background-color', '#ff003f');
-                    $(row).find('td:eq(6)').css('color', '#ffffff');
-                } else if (q > 0.2 && q <= 0.25) {
-                    $(row).find('td:eq(6)').css('background-color', '#f39c12');
-                    $(row).find('td:eq(6)').css('color', '#ffffff');
-    
-                } else if (q > 0.25 && q <= 0.3) {
-                    $(row).find('td:eq(6)').css('background-color', '#00ff3f');
-                    $(row).find('td:eq(6)').css('color', '#ffffff');
-    
-                } else if (q > 0.3) {
-                    $(row).find('td:eq(6)').css('background-color', '#00bfff');
-                    $(row).find('td:eq(6)').css('color', '#ffffff');
-    
-                }
-            },
             columns: [{
                     "data": "no",
                     "className": 'text-center',
@@ -677,36 +652,6 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
                 },
                 {
                     "data": "nm_barang"
-                },
-                {
-                    "data": "stok_barang",
-                    "className": 'text-center',
-                },
-                {
-                    "data": "sat_barang",
-                    "className": 'text-center',
-                },
-                {
-                    "data": "hrgsat_barang",
-                    "className": 'text-right',
-                    "visible": <?= ($_SESSION['level'] == 'pemilik') ? 'true' : 'false'; ?>,
-                    "render": function(data, type, row) {
-                        return formatRupiah(data);
-                    }
-                },
-                {
-                    "data": "hrgjual_barang",
-                    "className": 'text-left',
-                    // "render": function(data, type, row) {
-                    //     return formatRupiah(data);
-                    // }
-                },
-                {
-                    "data": "komisi",
-                    "className": 'text-right',
-                    "render": function(data, type, row) {
-                        return formatRupiah(data);
-                    }
                 },
                 {
                     "data": "indikasi",
