@@ -376,6 +376,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					$_SESSION['catatan'] = $r['catatan'];
 					$_SESSION['cekdarah'] = $r['cekdarah'];
 					$_SESSION['jurnalkas'] = $r['jurnalkas'];
+					$_SESSION['unit'] = $r['unit'];
 				}
 			}
 		}
@@ -484,6 +485,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 						$_SESSION['catatan'] = $r['catatan'];
 						$_SESSION['cekdarah'] = $r['cekdarah'];
 						$_SESSION['jurnalkas'] = $r['jurnalkas'];
+						$_SESSION['unit'] = $r['unit'];
 					}
 				}
 			}

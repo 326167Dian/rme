@@ -45,24 +45,37 @@ if ($_GET['action'] == "table_data") {
     $order = isset($columns[$colIndex]) ? $columns[$colIndex] : 'id_pelanggan';
     $dir = (isset($_POST['order']['0']['dir']) && strtolower($_POST['order']['0']['dir']) === 'asc') ? 'ASC' : 'DESC';
 
+    // Filter unit: tampilkan pelanggan sesuai unit admin yang login
+    $unitFilter = (isset($_SESSION['unit']) && !empty($_SESSION['unit'])) ? intval($_SESSION['unit']) : null;
+    $unitWhere = $unitFilter !== null ? " WHERE unit = $unitFilter " : " ";
+    $unitWhereAnd = $unitFilter !== null ? " AND unit = $unitFilter " : " ";
+
+    // Hitung total dengan filter unit
+    $querycount = $db->query("SELECT count(id_pelanggan) as jumlah FROM pelanggan" . $unitWhere);
+    $datacount = $querycount->fetch(PDO::FETCH_ASSOC);
+    $totalData = $datacount['jumlah'];
+    $totalFiltered = $totalData;
+
     if (empty($_POST['search']['value'])) {
         // always sort by id_pelanggan descending (largest first)
-        $query = $db->query("SELECT * FROM pelanggan ORDER BY id_pelanggan DESC LIMIT $limit OFFSET $start ");
+        $query = $db->query("SELECT * FROM pelanggan" . $unitWhere . "ORDER BY id_pelanggan DESC LIMIT $limit OFFSET $start ");
     } else {
         $search = $_POST['search']['value'];
         $query = $db->prepare("SELECT * FROM pelanggan 
-            WHERE nm_pelanggan LIKE ? 
+            WHERE (nm_pelanggan LIKE ? 
             OR tlp_pelanggan LIKE ? 
             OR alamat_pelanggan LIKE ? 
-            OR ket_pelanggan LIKE ? 
+            OR ket_pelanggan LIKE ?) 
+            $unitWhereAnd
             ORDER BY id_pelanggan DESC LIMIT $limit OFFSET $start");
         $query->execute(["%$search%", "%$search%", "%$search%", "%$search%"]);
 
         $querycount = $db->prepare("SELECT count(id_pelanggan) as jumlah FROM pelanggan 
-            WHERE nm_pelanggan LIKE ? 
+            WHERE (nm_pelanggan LIKE ? 
             OR tlp_pelanggan LIKE ? 
             OR alamat_pelanggan LIKE ? 
-            OR ket_pelanggan LIKE ?");
+            OR ket_pelanggan LIKE ?)
+            $unitWhereAnd");
         $querycount->execute(["%$search%", "%$search%", "%$search%", "%$search%"]);
         $datacount = $querycount->fetch(PDO::FETCH_ASSOC);
         $totalFiltered = $datacount['jumlah'];
