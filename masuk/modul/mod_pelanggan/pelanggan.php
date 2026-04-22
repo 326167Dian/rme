@@ -178,6 +178,11 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 			$stmt = $db->prepare("SELECT * FROM pelanggan WHERE id_pelanggan = ?");
 			$stmt->execute([$_GET['id']]);
 			$p = $stmt->fetch(PDO::FETCH_ASSOC);
+			if (!$p) {
+				$_SESSION['flash'] = "<div class='alert alert-danger'>Data pelanggan tidak ditemukan.</div>";
+				header('location:media_admin.php?module=pelanggan');
+				exit;
+			}
 			$has_riwayat_obat_table = ($db->query("SHOW TABLES LIKE 'riwayat_pelanggan_obat'")->rowCount() > 0);
 			// Generate CSRF token for riwayat actions if not set
 			if (!isset($_SESSION['csrf_pelanggan']) || empty($_SESSION['csrf_pelanggan'])) {
