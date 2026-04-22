@@ -38,7 +38,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					<a class='btn btn-success btn-flat' href='?module=cpp' target='_blank'>CATATAN PENGOBATAN PASIEN (CPP)</a>
 					<a class='btn btn-info btn-flat' href='?module=homecare' target='_blank'>HOME CARE </a>
 					<a class='btn btn-info btn-flat' href='?module=swamedikasi' target='_blank'>SWAMEDIKASI </a>
-					<a class='btn btn-info btn-flat' href='?module=cekdarah' target='_blank'>CEK DARAH</a>
+					<a class='btn btn-info btn-flat' href='?module=cekdarah&act=tambah<?php echo isset($_GET['id']) ? '&id_pelanggan=' . intval($_GET['id']) : ''; ?>' target='_blank'>CEK DARAH</a>
 					<br><br>
 
 

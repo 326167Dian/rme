@@ -58,6 +58,19 @@ switch($_GET['act']){
 	case "tambah":
         $petugas = $_SESSION['namalengkap'];
         $tglharini = date('Y-m-d H-i-s');
+		$id_pelanggan = 0;
+		if (isset($_GET['id_pelanggan'])) {
+			$id_pelanggan = intval($_GET['id_pelanggan']);
+		} elseif (isset($_GET['id'])) {
+			$id_pelanggan = intval($_GET['id']);
+		}
+
+		$pelanggan_terpilih = null;
+		if ($id_pelanggan > 0) {
+			$pelanggan_stmt = $db->prepare("SELECT id_pelanggan, nm_pelanggan FROM pelanggan WHERE id_pelanggan = ? LIMIT 1");
+			$pelanggan_stmt->execute([$id_pelanggan]);
+			$pelanggan_terpilih = $pelanggan_stmt->fetch(PDO::FETCH_ASSOC);
+		}
         echo "
 		  <div class='box box-primary box-solid table-responsive'>
 				<div class='box-header with-border'>
@@ -74,13 +87,19 @@ switch($_GET['act']){
 						
 							  <div class='form-group'>
 									<label class='col-sm-2 control-label'>Nama Pasien</label>        		
-									 <div class='col-sm-8'>
-										<select name='id_pelanggan' class='form-control' >";
-                                        $tampil = $db->query("SELECT * FROM pelanggan ORDER BY nm_pelanggan ASC");
-                                        while ($rk = $tampil->fetch(PDO::FETCH_ASSOC)) {
-                                            echo "<option value=$rk[id_pelanggan]>$rk[nm_pelanggan]</option>";
-                                        }
-                                        echo "</select>
+									 <div class='col-sm-8'>";
+										if ($pelanggan_terpilih) {
+											echo "<input type='hidden' name='id_pelanggan' value='" . intval($pelanggan_terpilih['id_pelanggan']) . "'>
+										<input type='text' name='nm_pelanggan' class='form-control' value='" . htmlspecialchars($pelanggan_terpilih['nm_pelanggan'], ENT_QUOTES, 'UTF-8') . "' readonly>";
+										} else {
+											echo "<select name='id_pelanggan' class='form-control' required='required'>";
+											$tampil = $db->query("SELECT * FROM pelanggan ORDER BY nm_pelanggan ASC");
+											while ($rk = $tampil->fetch(PDO::FETCH_ASSOC)) {
+												echo "<option value=$rk[id_pelanggan]>$rk[nm_pelanggan]</option>";
+											}
+											echo "</select>";
+										}
+										echo "
 									 </div>
 							  </div>
 							  
