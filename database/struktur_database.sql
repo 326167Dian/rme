@@ -67,7 +67,8 @@ CREATE TABLE `admin` (
   `kartustok` varchar(1) NOT NULL,
   `catatan` varchar(1) NOT NULL,
   `cekdarah` varchar(1) NOT NULL,
-  `jurnalkas` varchar(1) NOT NULL
+  `jurnalkas` varchar(1) NOT NULL,
+  `unit` int(11) NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------

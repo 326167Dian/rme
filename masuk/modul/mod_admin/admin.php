@@ -30,6 +30,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 									<th>Username</th>
 									<th>Nama</th>
 									<th>Telp/HP</th>
+									<th>Unit Bisnis</th>
 									<th>Blokir</th>
 									<th>Komisi</th>
 									<?php if ($_SESSION['level'] == 'pemilik') : ?>
@@ -40,11 +41,14 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 							<tbody>
 								<?php
 								$no = 1;
+
 								while ($r = $tampil_admin->fetch(PDO::FETCH_ASSOC)) {
-									echo "<tr><td>$no</td>
+								$bisnis_unit = $db->query("SELECT nm_unit FROM unit WHERE id_unit = '$r[unit]'")->fetch(PDO::FETCH_ASSOC);	
+								echo "<tr><td>$no</td>
 									 <td>$r[username]</td>
 									 <td>$r[nama_lengkap]</td>
 									 <td>$r[no_telp]</td>
+									 <td>$bisnis_unit[nm_unit]</td>
 									 <td>$r[blokir]</td>
 									 <td>$r[komisi]</td>
 									 <td>";
@@ -177,6 +181,21 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 									 </div>
 							  </div>
 							   <div class='form-group'>
+									<label class='col-sm-2 control-label'>Unit Bisnis</label>        		
+									 <div class='col-sm-4'>
+										<select class='form-control' name='unit'>
+											<option value=''>-- Pilih Unit --</option>
+											";
+											$unit_query = $db->query("SELECT id_unit, nm_unit FROM unit ORDER BY nm_unit");
+											while ($unit_row = $unit_query->fetch(PDO::FETCH_ASSOC)) {
+												echo "<option value='{$unit_row['id_unit']}'>{$unit_row['nm_unit']}</option>";
+											}
+											
+											echo"
+										</select>
+									 </div>
+							  </div>
+							   <div class='form-group'>
 									<label class='col-sm-2 control-label'>Akses Level</label>        		
 									 <div class='col-sm-4'>
 										<select class='form-control' name='level'>
@@ -185,7 +204,16 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 										</select>
 									 </div>
 							  </div>
-							  
+							  <div class='form-group'>
+									<label class='col-sm-2 control-label'>Akses Level</label>        		
+									 <div class='col-sm-4'>
+									 
+										<select class='form-control' name='level'>
+											<option value='pemilik'>Pemilik</option>
+											<option value='petugas'>Petugas</option>
+										</select>
+									 </div>
+							  </div>
 							  <div class='form-group'>
 									<label class='col-sm-2 control-label'>Akses Data Master</label>        		
 									 <div class='col-sm-4'>
@@ -314,6 +342,21 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 									<label class='col-sm-2 control-label'>Telp/HP</label>        		
 									 <div class='col-sm-4'>
 										<input type=text name='no_telp' id='no_telp' class='form-control' Placeholder='No Telepon' value='$r[no_telp]'>
+									 </div>
+							  </div>
+							   <div class='form-group'>
+									<label class='col-sm-2 control-label'>Unit Bisnis</label>        		
+									 <div class='col-sm-4'>
+										<select class='form-control' name='unit' id='unit'>
+											<option value=''>-- Pilih Unit --</option>
+											";
+											$unit_query = $db->query("SELECT id_unit, nm_unit FROM unit ORDER BY nm_unit");
+											while ($unit_row = $unit_query->fetch(PDO::FETCH_ASSOC)) {
+												$selected = ($unit_row['id_unit'] == $r['unit']) ? 'selected' : '';
+												echo "<option value='{$unit_row['id_unit']}' {$selected}>{$unit_row['nm_unit']}</option>";
+											}
+											echo"
+										</select>
 									 </div>
 							  </div>
 							  	<div class='form-group'>

@@ -266,9 +266,10 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 								 kartustok,
 								 catatan,
 								 cekdarah,
-								 jurnalkas)
-	                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-					$stmt->execute([$_POST['username'], $pass, $_POST['nama_lengkap'], $_POST['no_telp'], $_POST['blokir'], $mpengguna, $mheader, $mjenisbayar, $mpelanggan, $msupplier, $msatuan, $mjenisobat, $mbarang, $tbm, $tbmpbf, $tpk, $lpitem, $lpbrgmasuk, $lpkasir, $lpsupplier, $lppelanggan, $mstok, $stok_kritis, $orders, $penjualansebelum, $labapenjualan, $byrkredit, $stokopname, $soharian, $labajenisobat, $koreksistok, $shiftkerja, $neraca, $_POST['level'], $komisi, $kartustok, $catatan, $cekdarah, $jurnalkas]);
+								 jurnalkas,
+								 unit)
+	                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+					$stmt->execute([$_POST['username'], $pass, $_POST['nama_lengkap'], $_POST['no_telp'], $_POST['blokir'], $mpengguna, $mheader, $mjenisbayar, $mpelanggan, $msupplier, $msatuan, $mjenisobat, $mbarang, $tbm, $tbmpbf, $tpk, $lpitem, $lpbrgmasuk, $lpkasir, $lpsupplier, $lppelanggan, $mstok, $stok_kritis, $orders, $penjualansebelum, $labapenjualan, $byrkredit, $stokopname, $soharian, $labajenisobat, $koreksistok, $shiftkerja, $neraca, $_POST['level'], $komisi, $kartustok, $catatan, $cekdarah, $jurnalkas, $_POST['unit']]);
 
 					header('location:../../media_admin.php?module=' . $module);
 				}
@@ -322,9 +323,10 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 								kartustok = ?,
 								catatan = ?,
 								cekdarah = ?,
-								jurnalkas = ?
+								jurnalkas = ?,
+								unit = ?
                         WHERE id_admin = ?");
-				$stmt->execute([$_POST['username'], $_POST['nama_lengkap'], $_POST['no_telp'], $_POST['blokir'], $mpengguna, $mheader, $mjenisbayar, $mpelanggan, $msupplier, $msatuan, $mjenisobat, $mbarang, $tbm, $tbmpbf, $tpk, $lpitem, $lpbrgmasuk, $lpkasir, $lpsupplier, $lppelanggan, $mstok, $stok_kritis, $orders, $penjualansebelum, $labapenjualan, $byrkredit, $stokopname, $soharian, $labajenisobat, $koreksistok, $shiftkerja, $neraca, $_POST['level'], $komisi, $kartustok, $catatan, $cekdarah, $jurnalkas, $_POST['id']]);
+				$stmt->execute([$_POST['username'], $_POST['nama_lengkap'], $_POST['no_telp'], $_POST['blokir'], $mpengguna, $mheader, $mjenisbayar, $mpelanggan, $msupplier, $msatuan, $mjenisobat, $mbarang, $tbm, $tbmpbf, $tpk, $lpitem, $lpbrgmasuk, $lpkasir, $lpsupplier, $lppelanggan, $mstok, $stok_kritis, $orders, $penjualansebelum, $labapenjualan, $byrkredit, $stokopname, $soharian, $labajenisobat, $koreksistok, $shiftkerja, $neraca, $_POST['level'], $komisi, $kartustok, $catatan, $cekdarah, $jurnalkas, $_POST['unit'], $_POST['id']]);
 
 				$login = $db->prepare("SELECT * FROM admin WHERE username=? AND password=? AND blokir='N'");
 				$login->execute([$_SESSION['username'], $_SESSION['passuser']]);
@@ -429,9 +431,10 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 								kartustok = ?,
 								catatan = ?,
 								cekdarah = ?,
-								jurnalkas = ?
+								jurnalkas = ?,
+								unit = ?
                            WHERE id_admin = ?");
-					$stmt->execute([$pass, $_POST['nama_lengkap'], $_POST['no_telp'], $_POST['blokir'], $mpengguna, $mheader, $mjenisbayar, $mpelanggan, $msupplier, $msatuan, $mjenisobat, $mbarang, $tbm, $tbmpbf, $tpk, $lpitem, $lpbrgmasuk, $lpkasir, $lpsupplier, $lppelanggan, $mstok, $stok_kritis, $orders, $penjualansebelum, $labapenjualan, $byrkredit, $stokopname, $soharian, $labajenisobat, $koreksistok, $shiftkerja, $neraca, $_POST['level'], $komisi, $kartustok, $catatan, $cekdarah, $jurnalkas, $_POST['id']]);
+					$stmt->execute([$pass, $_POST['nama_lengkap'], $_POST['no_telp'], $_POST['blokir'], $mpengguna, $mheader, $mjenisbayar, $mpelanggan, $msupplier, $msatuan, $mjenisobat, $mbarang, $tbm, $tbmpbf, $tpk, $lpitem, $lpbrgmasuk, $lpkasir, $lpsupplier, $lppelanggan, $mstok, $stok_kritis, $orders, $penjualansebelum, $labapenjualan, $byrkredit, $stokopname, $soharian, $labajenisobat, $koreksistok, $shiftkerja, $neraca, $_POST['level'], $komisi, $kartustok, $catatan, $cekdarah, $jurnalkas, $_POST['unit'], $_POST['id']]);
 
 					$login = $db->prepare("SELECT * FROM admin WHERE username=? AND password=? AND blokir='N'");
 					$login->execute([$_SESSION['username'], $_SESSION['passuser']]);
