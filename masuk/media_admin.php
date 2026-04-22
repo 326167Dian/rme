@@ -195,6 +195,17 @@ if ($_SESSION['login'] == 0) {
 							<?php if ($_SESSION['mbarang'] == "Y") { ?><li><a href="?module=barang"><i class="glyphicon glyphicon-book"></i> Item Obat</a></li><?php } ?> 
 							<?php if ($_SESSION['catatan'] == "Y") { ?><li><a href="?module=catatan"><i class='glyphicon glyphicon-pencil'></i> Catatan</a></li><?php } ?>
 
+							<?php if ($_SESSION['level'] == "pemilik") { ?>
+							<li class="treeview">
+								<a href="#">
+									<i class="glyphicon glyphicon-list"></i> <span>Data Master</span> <i class="fa fa-angle-left pull-right"></i>
+								</a>
+								<ul class="treeview-menu">
+									<li><a href="?module=unit"><i class="glyphicon glyphicon-briefcase"></i> Unit Bisnis</a></li>
+								</ul>
+							</li>
+							<?php } ?>
+
 							<!--
 							<li class="treeview">
 								<a href="#">
@@ -411,3 +422,4 @@ if ($_SESSION['login'] == 0) {
 // 		});
 // 	});
 </script>
+

@@ -365,6 +365,11 @@ elseif ($_GET['module'] == 'satuan') {
     include "modul/mod_satuan/satuan.php";
 }
 
+// Bagian unit bisnis
+elseif ($_GET['module'] == 'unit') {
+    include "modul/mod_unit/unit.php";
+}
+
 // Bagian jenisobat
 elseif ($_GET['module'] == 'jenisobat') {
     include "modul/mod_jenisobat/jenisobat.php";
@@ -565,3 +570,5 @@ elseif ($_GET['module'] == 'swamedikasi') {
 // }
 
     ?>
+
+

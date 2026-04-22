@@ -19,7 +19,7 @@
 $server = "localhost";
 $user = "root";
 $password = "";
-$database = "btr7";
+$database = "rme";
 set_time_limit(1800);
 
 try {
