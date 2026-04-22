@@ -1,8 +1,26 @@
 <?php
 
+date_default_timezone_set('Asia/Jakarta');
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+function format_pelanggan_local_datetime($datetime)
+{
+	if (empty($datetime) || $datetime === '0000-00-00 00:00:00') {
+		return '-';
+	}
+
+	try {
+		$jakarta_timezone = new DateTimeZone('Asia/Jakarta');
+		$local_datetime = new DateTime($datetime, $jakarta_timezone);
+
+		return $local_datetime->format('d-m-Y H:i:s');
+	} catch (Exception $e) {
+		return $datetime;
+	}
+}
 
 // session_start(); // Sudah aktif di media_admin.php
 if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
@@ -353,6 +371,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 				$delete_link = $aksi."?module=pelanggan&act=hapus_riwayat&id=".$rw['id']."&token=".$token;
 				$obat_tindakan = isset($obat_map[$rw['id']]) ? implode("<br>", $obat_map[$rw['id']]) : htmlspecialchars($rw['tindakan']);
 				$tgl_followup = (isset($rw['tgl_followup']))? $rw['tgl_followup']:'<button type="button" data-id="'.$rw['id'].'" class="tgl_followup btn btn-danger">Klik untuk followup</button>';
+				$created_at_local = format_pelanggan_local_datetime($rw['created_at']);
 				echo "<tr>
 					<td>$no</td>
 					<td>$rw[tgl]</td>
@@ -361,7 +380,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					<td>$rw[followup]</td>
 					<td>$tgl_followup</td>
 					<td>$rw[followup_by]</td>
-					<td>$rw[created_at]</td>
+					<td>$created_at_local</td>
 					<td>
 						<a href='".$edit_link."' title='EDIT' class='btn btn-warning btn-xs'>EDIT</a>
 						<a href=javascript:confirmdelete('".$delete_link."') title='HAPUS' class='btn btn-danger btn-xs'>HAPUS</a>

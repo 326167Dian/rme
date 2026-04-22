@@ -1,6 +1,23 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Jakarta');
 include_once '../../../configurasi/koneksi.php';
+
+function format_pelanggan_local_datetime_serverside($datetime)
+{
+    if (empty($datetime) || $datetime === '0000-00-00 00:00:00') {
+        return '-';
+    }
+
+    try {
+        $jakarta_timezone = new DateTimeZone('Asia/Jakarta');
+        $local_datetime = new DateTime($datetime, $jakarta_timezone);
+
+        return $local_datetime->format('d-m-Y H:i:s');
+    } catch (Exception $e) {
+        return $datetime;
+    }
+}
 
 if ($_GET['action'] == "table_data") {
 
@@ -68,7 +85,7 @@ if ($_GET['action'] == "table_data") {
             if ($followq->rowCount() > 0) {
                 $fq = $followq->fetch(PDO::FETCH_ASSOC);
                 $nestedData['followup'] = htmlspecialchars($fq['followup']);
-                $nestedData['followup'] .= "<br><small>" . $fq['created_at'] . "</small>";
+                $nestedData['followup'] .= "<br><small>" . format_pelanggan_local_datetime_serverside($fq['created_at']) . "</small>";
             } else {
                 $nestedData['followup'] = '';
             }

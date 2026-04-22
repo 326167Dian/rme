@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Jakarta');
  if (empty($_SESSION['username']) AND empty($_SESSION['passuser'])){
   echo "<link href='style.css' rel='stylesheet' type='text/css'>
  <center>Untuk mengakses modul, Anda harus login <br>";
@@ -58,6 +59,11 @@ function build_riwayat_obat_items($db, $obatKds, $aturanPakaiList){
         'items' => $items,
         'summary' => implode('; ', $summaryLines)
     ];
+}
+
+function pelanggan_current_datetime()
+{
+    return date('Y-m-d H:i:s');
 }
 
 $module=$_GET['module'];
@@ -185,16 +191,17 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
 
     try {
         $db->beginTransaction();
+        $created_at = pelanggan_current_datetime();
 
         $stmt = $db->prepare("INSERT INTO riwayat_pelanggan(id_pelanggan, tgl, diagnosa, tindakan, followup, created_at)
-                                    VALUES(?, ?, ?, ?, ?, NOW())");
-        $stmt->execute([$id_p, $tgl, $diagnosa, $tindakan, $followup]);
+                                    VALUES(?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$id_p, $tgl, $diagnosa, $tindakan, $followup, $created_at]);
 
         $id_riwayat = (int) $db->lastInsertId();
         $detailStmt = $db->prepare("INSERT INTO riwayat_pelanggan_obat(id_riwayat, kd_barang, nm_barang, aturan_pakai, created_at)
-                                    VALUES(?, ?, ?, ?, NOW())");
+                                    VALUES(?, ?, ?, ?, ?)");
         foreach ($obatItems as $item) {
-            $detailStmt->execute([$id_riwayat, $item['kd_barang'], $item['nm_barang'], $item['aturan_pakai']]);
+            $detailStmt->execute([$id_riwayat, $item['kd_barang'], $item['nm_barang'], $item['aturan_pakai'], $created_at]);
         }
 
         $db->commit();
@@ -262,6 +269,7 @@ elseif ($module=='pelanggan' AND $act=='update_riwayat'){
 
     try {
         $db->beginTransaction();
+        $created_at = pelanggan_current_datetime();
 
         $stmt = $db->prepare("UPDATE riwayat_pelanggan SET tgl = ?, diagnosa = ?, tindakan = ?, followup = ? WHERE id = ?");
         $stmt->execute([$tgl, $diagnosa, $tindakan, $followup, $id_r]);
@@ -269,9 +277,9 @@ elseif ($module=='pelanggan' AND $act=='update_riwayat'){
         $db->prepare("DELETE FROM riwayat_pelanggan_obat WHERE id_riwayat = ?")->execute([$id_r]);
 
         $detailStmt = $db->prepare("INSERT INTO riwayat_pelanggan_obat(id_riwayat, kd_barang, nm_barang, aturan_pakai, created_at)
-                                    VALUES(?, ?, ?, ?, NOW())");
+                                    VALUES(?, ?, ?, ?, ?)");
         foreach ($obatItems as $item) {
-            $detailStmt->execute([$id_r, $item['kd_barang'], $item['nm_barang'], $item['aturan_pakai']]);
+            $detailStmt->execute([$id_r, $item['kd_barang'], $item['nm_barang'], $item['aturan_pakai'], $created_at]);
         }
 
         $db->commit();
