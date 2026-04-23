@@ -59,7 +59,12 @@ if (empty($_SESSION['username']) AND empty($_SESSION['passuser'])) {
       $now = unit_current_datetime();
       $stmt = $db->prepare("INSERT INTO unit(id_unit, nm_unit, lokasi, created_at, updated_at) VALUES(?, ?, ?, ?, ?)");
       $stmt->execute([$id_unit, $nm_unit, $lokasi, $now, $now]);
+
+    $stmt = $db->prepare("INSERT INTO setheader(unit, satu) VALUES(?, ?)");
+    $stmt->execute([$id_unit, $nm_unit]);
       header('location:../../media_admin.php?module=' . $module);
+
+      
   } elseif ($module == 'unit' AND $act == 'update_unit') {
       $id_unit = isset($_POST['id']) ? (int) $_POST['id'] : 0;
       $nm_unit = isset($_POST['nm_unit']) ? trim($_POST['nm_unit']) : '';
