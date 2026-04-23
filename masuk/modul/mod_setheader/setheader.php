@@ -14,8 +14,8 @@ switch($_GET['act']){
   default:
 
     
-	$stmt = $db->prepare("SELECT * FROM setheader");
-	$stmt->execute();
+	$stmt = $db->prepare("SELECT * FROM setheader WHERE unit = ? LIMIT 1");
+	$stmt->execute([$_SESSION['unit']]);
 	$r = $stmt->fetch(PDO::FETCH_ASSOC);
 			
 		echo "

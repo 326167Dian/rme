@@ -43,8 +43,8 @@ if ($module=='setheader' AND $act=='update_setheader'){
         $fupload_tandatangan = $row['tandatangan'];
     }
     
-    $stmt = $db->prepare("UPDATE setheader SET satu = ?, dua = ?, tiga = ?, empat = ?, lima = ?, enam = ?, tujuh = ?, delapan = ?, sembilan = ?, sepuluh = ?, sebelas = ?, duabelas = ?, tigabelas = ?, logo = ?, tandatangan = ? WHERE id_setheader = ?");
-    $stmt->execute([$_POST['satu'], $_POST['dua'], $_POST['tiga'], $_POST['empat'], $_POST['lima'], $_POST['enam'], $_POST['tujuh'], $_POST['delapan'], $_POST['sembilan'], $_POST['sepuluh'], $_POST['sebelas'], $_POST['duabelas'], $_POST['tigabelas'], $fupload_name, $fupload_tandatangan, $_POST['id']]);
+    $stmt = $db->prepare("UPDATE setheader SET satu = ?, dua = ?, tiga = ?, empat = ?, lima = ?, enam = ?, tujuh = ?, delapan = ?, sembilan = ?, sepuluh = ?, sebelas = ?, duabelas = ?, tigabelas = ?, logo = ?, tandatangan = ? WHERE id_setheader = ? and unit = ?");
+    $stmt->execute([$_POST['satu'], $_POST['dua'], $_POST['tiga'], $_POST['empat'], $_POST['lima'], $_POST['enam'], $_POST['tujuh'], $_POST['delapan'], $_POST['sembilan'], $_POST['sepuluh'], $_POST['sebelas'], $_POST['duabelas'], $_POST['tigabelas'], $fupload_name, $fupload_tandatangan, $_POST['id'], $_SESSION['unit']]);
 									
 	echo "<script type='text/javascript'>alert('Data berhasil diubah !');window.location='../../media_admin.php?module=".$module."'</script>";
 	//header('location:../../media_admin.php?module='.$module);
