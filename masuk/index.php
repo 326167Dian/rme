@@ -49,7 +49,7 @@ if (!empty($_SESSION['namauser']) and !empty($_SESSION['passuser'])) {
         $r = $nama_apotek->fetch(PDO::FETCH_ASSOC);
         ?>
 
-        <h3 style="text-align:center"><b> REKAM MEDIS ELEKTRONIK <BR> <?= $r['satu']  ?> </b></h3>
+        <h3 style="text-align:center"><b> REKAM MEDIS ELEKTRONIK <br> APOTEK D71 </b></h3>
         <center><h5>Versi e-commerce 2025</h5></center>
       </div>
 

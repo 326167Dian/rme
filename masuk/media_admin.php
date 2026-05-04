@@ -89,8 +89,26 @@ if ($_SESSION['login'] == 0) {
 
 		<body class="hold-transition skin-blue-light sidebar-mini">
 		<?php
-		$nama_apotek = $db->query("SELECT * from setheader ");
-        $r = $nama_apotek->fetch(PDO::FETCH_ASSOC);
+		$unitLogin = isset($_SESSION['unit']) ? (int) $_SESSION['unit'] : 0;
+		if ($unitLogin > 0) {
+			$nama_apotek = $db->prepare("SELECT * FROM setheader WHERE unit = ? LIMIT 1");
+			$nama_apotek->execute([$unitLogin]);
+			$r = $nama_apotek->fetch(PDO::FETCH_ASSOC);
+		} else {
+			$r = false;
+		}
+
+		if (!$r) {
+			$r = ['satu' => 'SMART INVENTORY'];
+			if ($unitLogin > 0) {
+				$unitStmt = $db->prepare("SELECT nm_unit FROM unit WHERE id_unit = ? LIMIT 1");
+				$unitStmt->execute([$unitLogin]);
+				$unitRow = $unitStmt->fetch(PDO::FETCH_ASSOC);
+				if ($unitRow && !empty($unitRow['nm_unit'])) {
+					$r['satu'] = $unitRow['nm_unit'];
+				}
+			}
+		}
 		?>
 			<div class="wrapper">
 
@@ -132,7 +150,7 @@ if ($_SESSION['login'] == 0) {
 								</li>
 								<li class="dropdown user user-menu">
 									<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-										<img src="dist/images/mysifalogokecil.png" class="user-image" alt="User Image" width="100%">
+										<img src="images/mysifalogo.png" class="user-image" alt="User Image" width="100%">
 										<span class="hidden-xs">
 											<?php echo $_SESSION['namauser']; ?>
 										</span>
@@ -140,7 +158,7 @@ if ($_SESSION['login'] == 0) {
 									<ul class="dropdown-menu">
 										<!-- User image -->
 										<li class="user-header">
-											<img src="dist/img/mysifalogokecil.png" class="img-circle" alt="User Image">
+											<img src="images/mysifalogo.png" class="img-circle" alt="User Image">
 
 										</li>
 										<!-- Menu Body -->

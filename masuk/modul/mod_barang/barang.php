@@ -27,6 +27,8 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 				</div>
 				<div class="box-body table-responsive">
 					<a class='btn  btn-success btn-flat' href='?module=barang&act=tambah'>TAMBAH</a>
+					<a class='btn  btn-danger btn-flat' href='?module=zataktif'>Zat Aktif/Merk Obat</a>
+					<a class='btn  btn-success btn-flat' href='?module=barang&act=editor'>Editor</a>
 					<!-- <?php
 
 					$lupa = $_SESSION['level'];
