@@ -66,6 +66,87 @@ function pelanggan_current_datetime()
     return date('Y-m-d H:i:s');
 }
 
+function ensure_riwayat_foto_column($db)
+{
+    static $checked = false;
+    if ($checked) {
+        return;
+    }
+
+    $checked = true;
+    $stmt = $db->query("SHOW COLUMNS FROM riwayat_pelanggan LIKE 'foto'");
+    if ($stmt && $stmt->rowCount() > 0) {
+        return;
+    }
+
+    $db->exec("ALTER TABLE riwayat_pelanggan ADD COLUMN foto VARCHAR(255) NULL AFTER followup");
+}
+
+function riwayat_image_upload_dir()
+{
+    return realpath(__DIR__ . '/../../') . DIRECTORY_SEPARATOR . 'images';
+}
+
+function upload_riwayat_foto($fileInput)
+{
+    if (!isset($_FILES[$fileInput])) {
+        return ['ok' => true, 'filename' => ''];
+    }
+
+    $file = $_FILES[$fileInput];
+
+    if (!isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE) {
+        return ['ok' => true, 'filename' => ''];
+    }
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return ['ok' => false, 'error' => 'Upload foto gagal.'];
+    }
+
+    if ($file['size'] > 2 * 1024 * 1024) {
+        return ['ok' => false, 'error' => 'Ukuran foto maksimal 2MB.'];
+    }
+
+    $originalName = isset($file['name']) ? $file['name'] : '';
+    $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    if (!in_array($ext, $allowedExt, true)) {
+        return ['ok' => false, 'error' => 'Format foto tidak didukung.'];
+    }
+
+    if (function_exists('random_bytes')) {
+        $suffix = bin2hex(random_bytes(4));
+    } else {
+        $suffix = str_replace('.', '', uniqid('', true));
+    }
+    $safeName = 'riwayat_' . date('Ymd_His') . '_' . $suffix . '.' . $ext;
+    $targetDir = riwayat_image_upload_dir();
+    if ($targetDir === false) {
+        return ['ok' => false, 'error' => 'Folder images tidak ditemukan.'];
+    }
+
+    $targetPath = $targetDir . DIRECTORY_SEPARATOR . $safeName;
+    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        return ['ok' => false, 'error' => 'Gagal menyimpan file foto ke server.'];
+    }
+
+    return ['ok' => true, 'filename' => $safeName];
+}
+
+function delete_riwayat_foto_file($filename)
+{
+    $filename = trim((string) $filename);
+    if ($filename === '') {
+        return;
+    }
+
+    $path = riwayat_image_upload_dir() . DIRECTORY_SEPARATOR . $filename;
+    if (is_file($path)) {
+        @unlink($path);
+    }
+}
+
 $module=$_GET['module'];
 $act=$_GET['act'];
 
@@ -160,6 +241,14 @@ elseif ($module=='pelanggan' AND $act=='hapus'){
 
 // Input Riwayat Pelanggan
 elseif ($module=='pelanggan' AND $act=='input_riwayat'){
+    try {
+        ensure_riwayat_foto_column($db);
+    } catch (Exception $e) {
+        $_SESSION['flash'] = "<div class='alert alert-danger'>Gagal menyiapkan kolom foto: " . htmlspecialchars($e->getMessage()) . "</div>";
+        header('location:../../media_admin.php?module='.$module.'&act=riwayat&id=' . intval($_POST['id_pelanggan']));
+        exit;
+    }
+
     // CSRF check
     if (!isset($_POST['token']) || $_POST['token'] !== $_SESSION['csrf_pelanggan']){
         $_SESSION['flash'] = "<div class='alert alert-danger'>Token tidak valid. Coba ulangi.</div>";
@@ -173,6 +262,14 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
     $obat_kd = isset($_POST['obat_kd']) ? $_POST['obat_kd'] : [];
     $aturan_pakai = isset($_POST['aturan_pakai']) ? $_POST['aturan_pakai'] : [];
     $followup = trim($_POST['followup']);
+
+    $uploadFoto = upload_riwayat_foto('foto');
+    if (!$uploadFoto['ok']) {
+        $_SESSION['flash'] = "<div class='alert alert-danger'>" . htmlspecialchars($uploadFoto['error']) . "</div>";
+        header('location:../../media_admin.php?module='.$module.'&act=riwayat&id='.$id_p);
+        exit;
+    }
+    $foto = $uploadFoto['filename'];
 
     $tableCheck = $db->query("SHOW TABLES LIKE 'riwayat_pelanggan_obat'");
     if ($tableCheck->rowCount() < 1) {
@@ -210,9 +307,9 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
         $db->beginTransaction();
         $created_at = pelanggan_current_datetime();
 
-        $stmt = $db->prepare("INSERT INTO riwayat_pelanggan(id_pelanggan, tgl, diagnosa, tindakan, followup, created_at)
-                                    VALUES(?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$id_p, $tgl, $diagnosa, $tindakan, $followup, $created_at]);
+        $stmt = $db->prepare("INSERT INTO riwayat_pelanggan(id_pelanggan, tgl, diagnosa, tindakan, followup, foto, created_at)
+                        VALUES(?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$id_p, $tgl, $diagnosa, $tindakan, $followup, $foto, $created_at]);
 
         $id_riwayat = (int) $db->lastInsertId();
         $detailStmt = $db->prepare("INSERT INTO riwayat_pelanggan_obat(id_riwayat, kd_barang, nm_barang, aturan_pakai, created_at)
@@ -223,6 +320,9 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
 
         $db->commit();
     } catch (Exception $e) {
+        if (!empty($foto)) {
+            delete_riwayat_foto_file($foto);
+        }
         if ($db->inTransaction()) {
             $db->rollBack();
         }
@@ -240,6 +340,14 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
 
 // Update Riwayat Pelanggan
 elseif ($module=='pelanggan' AND $act=='update_riwayat'){
+    try {
+        ensure_riwayat_foto_column($db);
+    } catch (Exception $e) {
+        $_SESSION['flash'] = "<div class='alert alert-danger'>Gagal menyiapkan kolom foto: " . htmlspecialchars($e->getMessage()) . "</div>";
+        header('location:../../media_admin.php?module='.$module.'&act=riwayat&id=' . intval($_POST['id_pelanggan']));
+        exit;
+    }
+
     if (!isset($_POST['token']) || $_POST['token'] !== $_SESSION['csrf_pelanggan']){
         $_SESSION['flash'] = "<div class='alert alert-danger'>Token tidak valid. Coba ulangi.</div>";
         header('location:../../media_admin.php?module='.$module.'&act=riwayat&id=' . intval($_POST['id_pelanggan']));
@@ -276,20 +384,35 @@ elseif ($module=='pelanggan' AND $act=='update_riwayat'){
         exit;
     }
 
-    $cek = $db->prepare("SELECT id FROM riwayat_pelanggan WHERE id = ? AND id_pelanggan = ?");
+    $cek = $db->prepare("SELECT id, foto FROM riwayat_pelanggan WHERE id = ? AND id_pelanggan = ?");
     $cek->execute([$id_r, $id_p]);
     if($cek->rowCount() < 1){
         $_SESSION['flash'] = "<div class='alert alert-danger'>Riwayat tidak ditemukan.</div>";
         header('location:../../media_admin.php?module='.$module.'&act=riwayat&id='.$id_p);
         exit;
     }
+    $cekRow = $cek->fetch(PDO::FETCH_ASSOC);
+    $fotoLama = isset($cekRow['foto']) ? $cekRow['foto'] : '';
+
+    $uploadFoto = upload_riwayat_foto('foto');
+    if (!$uploadFoto['ok']) {
+        $_SESSION['flash'] = "<div class='alert alert-danger'>" . htmlspecialchars($uploadFoto['error']) . "</div>";
+        header('location:../../media_admin.php?module='.$module.'&act=edit_riwayat&id='.$id_p.'&idr='.$id_r);
+        exit;
+    }
+
+    $fotoBaru = $uploadFoto['filename'];
+    $fotoFinal = $fotoLama;
+    if (!empty($fotoBaru)) {
+        $fotoFinal = $fotoBaru;
+    }
 
     try {
         $db->beginTransaction();
         $created_at = pelanggan_current_datetime();
 
-        $stmt = $db->prepare("UPDATE riwayat_pelanggan SET tgl = ?, diagnosa = ?, tindakan = ?, followup = ? WHERE id = ?");
-        $stmt->execute([$tgl, $diagnosa, $tindakan, $followup, $id_r]);
+        $stmt = $db->prepare("UPDATE riwayat_pelanggan SET tgl = ?, diagnosa = ?, tindakan = ?, followup = ?, foto = ? WHERE id = ?");
+        $stmt->execute([$tgl, $diagnosa, $tindakan, $followup, $fotoFinal, $id_r]);
 
         $db->prepare("DELETE FROM riwayat_pelanggan_obat WHERE id_riwayat = ?")->execute([$id_r]);
 
@@ -300,7 +423,13 @@ elseif ($module=='pelanggan' AND $act=='update_riwayat'){
         }
 
         $db->commit();
+        if (!empty($fotoBaru) && !empty($fotoLama) && $fotoLama !== $fotoBaru) {
+            delete_riwayat_foto_file($fotoLama);
+        }
     } catch (Exception $e) {
+        if (!empty($fotoBaru)) {
+            delete_riwayat_foto_file($fotoBaru);
+        }
         if ($db->inTransaction()) {
             $db->rollBack();
         }
@@ -316,13 +445,21 @@ elseif ($module=='pelanggan' AND $act=='update_riwayat'){
 
 // Hapus Riwayat Pelanggan
 elseif ($module=='pelanggan' AND $act=='hapus_riwayat'){
+    try {
+        ensure_riwayat_foto_column($db);
+    } catch (Exception $e) {
+        $_SESSION['flash'] = "<div class='alert alert-danger'>Gagal menyiapkan kolom foto: " . htmlspecialchars($e->getMessage()) . "</div>";
+        header('location:../../media_admin.php?module='.$module);
+        exit;
+    }
+
     if (!isset($_GET['token']) || $_GET['token'] !== $_SESSION['csrf_pelanggan']){
         $_SESSION['flash'] = "<div class='alert alert-danger'>Token tidak valid. Coba ulangi.</div>";
         header('location:../../media_admin.php?module='.$module);
         exit;
     }
     $id = intval($_GET['id']);
-    $q = $db->prepare("SELECT id_pelanggan FROM riwayat_pelanggan WHERE id = ?");
+    $q = $db->prepare("SELECT id_pelanggan, foto FROM riwayat_pelanggan WHERE id = ?");
     $q->execute([$id]);
     if ($q->rowCount() < 1){
         $_SESSION['flash'] = "<div class='alert alert-danger'>Riwayat tidak ditemukan.</div>";
@@ -331,9 +468,11 @@ elseif ($module=='pelanggan' AND $act=='hapus_riwayat'){
     }
     $row = $q->fetch(PDO::FETCH_ASSOC);
     $id_p = $row['id_pelanggan'];
+    $foto = isset($row['foto']) ? $row['foto'] : '';
     $db->prepare("DELETE FROM riwayat_pelanggan_obat WHERE id_riwayat = ?")->execute([$id]);
     $stmt = $db->prepare("DELETE FROM riwayat_pelanggan WHERE id = ?");
     $stmt->execute([$id]);
+    delete_riwayat_foto_file($foto);
     unset($_SESSION['csrf_pelanggan']);
     $_SESSION['flash'] = "<div class='alert alert-success'>Riwayat berhasil dihapus.</div>";
     header('location:../../media_admin.php?module='.$module.'&act=riwayat&id='.$id_p);

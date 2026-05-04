@@ -15,15 +15,17 @@ if ($_GET['action'] == "table_data") {
         8 => 'id_cekdarah'
     );
 
-    $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c");
-    $querycount->execute();
+    $unit = isset($_SESSION['unit']) ? $_SESSION['unit'] : '';
+
+    $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c WHERE c.unit = ?");
+    $querycount->execute([$unit]);
     $datacount = $querycount->fetch(PDO::FETCH_ASSOC);
 
     $totalData = $datacount['jumlah'];
     $totalFiltered = $totalData;
 
-    $limit = $_POST['length'];
-    $start = $_POST['start'];
+    $limit = isset($_POST['length']) ? intval($_POST['length']) : 10;
+    $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
 
     // default ordering: newest first
     $order = 'id_cekdarah';
@@ -37,15 +39,29 @@ if ($_GET['action'] == "table_data") {
     }
 
     if (empty($_POST['search']['value'])) {
-        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan ORDER BY $order DESC LIMIT $limit OFFSET $start");
+        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE c.unit = ? ORDER BY $order $dir LIMIT :limit OFFSET :start");
+        $query->bindValue(1, $unit, PDO::PARAM_STR);
+        $query->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $query->bindValue(':start', $start, PDO::PARAM_INT);
+        $query->execute();
     } else {
         $search = $_POST['search']['value'];
-        // $search = $db->real_escape_string($_POST['search']['value']);
-        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE p.nm_pelanggan LIKE '%$search%' OR c.petugas LIKE '%$search%' OR c.gula LIKE '%$search%' OR c.asamurat LIKE '%$search%' OR c.kolesterol LIKE '%$search%' OR c.tensi LIKE '%$search%' OR c.waktu LIKE '%$search%' ORDER BY $order DESC LIMIT $limit OFFSET $start");
+        $searchLike = '%' . $search . '%';
+        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE c.unit = ? AND (p.nm_pelanggan LIKE ? OR c.petugas LIKE ? OR c.gula LIKE ? OR c.asamurat LIKE ? OR c.kolesterol LIKE ? OR c.tensi LIKE ? OR c.waktu LIKE ?) ORDER BY $order $dir LIMIT :limit OFFSET :start");
+        $query->bindValue(1, $unit, PDO::PARAM_STR);
+        $query->bindValue(2, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(3, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(4, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(5, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(6, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(7, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(8, $searchLike, PDO::PARAM_STR);
+        $query->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $query->bindValue(':start', $start, PDO::PARAM_INT);
+        $query->execute();
 
-        $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE p.nm_pelanggan LIKE '%$search%' OR c.petugas LIKE '%$search%' OR c.gula LIKE '%$search%' OR c.asamurat LIKE '%$search%' OR c.kolesterol LIKE '%$search%' OR c.tensi LIKE '%$search%' OR c.waktu LIKE '%$search%'");
-        
-        $querycount->execute();
+        $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE c.unit = ? AND (p.nm_pelanggan LIKE ? OR c.petugas LIKE ? OR c.gula LIKE ? OR c.asamurat LIKE ? OR c.kolesterol LIKE ? OR c.tensi LIKE ? OR c.waktu LIKE ?)");
+        $querycount->execute([$unit, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike]);
         $datacount = $querycount->fetch(PDO::FETCH_ASSOC);
         $totalFiltered = $datacount['jumlah'];
     }
@@ -53,7 +69,6 @@ if ($_GET['action'] == "table_data") {
     $data = array();
     if (!empty($query)) {
         $no = $start + 1;
-        $query->execute();
         while ($value = $query->fetch(PDO::FETCH_ASSOC)) {
             $nestedData = array();
             $nestedData['no'] = $no;
@@ -104,3 +119,4 @@ if ($_GET['action'] == "table_data") {
 
     echo json_encode($json_data);
 }
+?>

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `riwayat_pelanggan` (
   `diagnosa` TEXT,
   `tindakan` TEXT,
   `followup` TEXT,
+  `foto` VARCHAR(255) NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_id_pelanggan` (`id_pelanggan`)

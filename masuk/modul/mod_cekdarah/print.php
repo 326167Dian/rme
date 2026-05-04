@@ -1,11 +1,17 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+	session_start();
+}
+
 include "../../../configurasi/koneksi.php";
 require('../../assets/pdf/fpdf.php');
 include "../../../configurasi/fungsi_indotgl.php";
 include "../../../configurasi/fungsi_rupiah.php";
 
 //ambil header
-$ah = $db->query("SELECT * FROM setheader");
+$unit = isset($_SESSION['unit']) ? $_SESSION['unit'] : '';
+$ah = $db->prepare("SELECT * FROM setheader WHERE unit = ? LIMIT 1");
+$ah->execute([$unit]);
 $rh = $ah->fetch(PDO::FETCH_ASSOC);
 
 $dt = $db->prepare("SELECT * FROM cekdarah 

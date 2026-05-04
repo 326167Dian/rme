@@ -283,6 +283,13 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					</div>
 				</div>
 				<div class='form-group'>
+					<label class='col-sm-2 control-label'>Foto</label>
+					<div class='col-sm-4'>
+						<input type='file' name='foto' class='form-control' accept='image/*'>
+						<p class='help-block' style='margin-bottom:0;'>Format: jpg, jpeg, png, gif, webp (maks 2MB)</p>
+					</div>
+				</div>
+				<div class='form-group'>
 					<label class='col-sm-2 control-label'>Saran konsultasi</label>
 					<div class='col-sm-4'>
 						<textarea name='followup' class='form-control' rows='3'></textarea>
@@ -333,6 +340,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 						<th>Tanggal</th>
 						<th>Diagnosa</th>
 						<th>Tindakan</th>
+						<th>Foto</th>
 						<th>Saran Konsultasi</th>
 						<th>Tgl Follow Up</th>
 						<th>Follow Up oleh</th>
@@ -370,6 +378,11 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 				$edit_link = "?module=pelanggan&act=edit_riwayat&id=$_GET[id]&idr=".$rw['id'];
 				$delete_link = $aksi."?module=pelanggan&act=hapus_riwayat&id=".$rw['id']."&token=".$token;
 				$obat_tindakan = isset($obat_map[$rw['id']]) ? implode("<br>", $obat_map[$rw['id']]) : htmlspecialchars($rw['tindakan']);
+				$fotoCell = '-';
+				if (!empty($rw['foto'])) {
+					$fotoNama = htmlspecialchars($rw['foto']);
+					$fotoCell = "<a href='images/".$fotoNama."' target='_blank'><img src='images/".$fotoNama."' alt='Foto Riwayat' style='max-width:80px; max-height:80px; border:1px solid #ddd;'></a>";
+				}
 				$tgl_followup = (isset($rw['tgl_followup']))? $rw['tgl_followup']:'<button type="button" data-id="'.$rw['id'].'" class="tgl_followup btn btn-danger">Klik untuk followup</button>';
 				$created_at_local = format_pelanggan_local_datetime($rw['created_at']);
 				echo "<tr>
@@ -377,6 +390,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					<td>$rw[tgl]</td>
 					<td>$rw[diagnosa]</td>
 					<td>$obat_tindakan</td>
+					<td>$fotoCell</td>
 					<td>$rw[followup]</td>
 					<td>$tgl_followup</td>
 					<td>$rw[followup_by]</td>
@@ -427,6 +441,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 			<form method=POST action='$aksi?module=pelanggan&act=update_riwayat' enctype='multipart/form-data' class='form-horizontal'>
 				<input type=hidden name='id_pelanggan' value='$_GET[id]'>
 				<input type=hidden name='id_riwayat' value='".$rw['id']."'>
+				<input type=hidden name='foto_lama' value='".htmlspecialchars(isset($rw['foto']) ? $rw['foto'] : '')."'>
 				<input type=hidden name='token' value='".$token."'>
 				<div class='form-group'>
 					<label class='col-sm-2 control-label'>Tanggal</label>
@@ -496,6 +511,17 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 			echo "
 						</div>
 						<button type='button' id='btn-tambah-obat-edit' class='btn btn-default btn-sm'>+Tambah Obat</button>
+					</div>
+				</div>
+				<div class='form-group'>
+					<label class='col-sm-2 control-label'>Foto</label>
+					<div class='col-sm-4'>
+						<input type='file' name='foto' class='form-control' accept='image/*'>
+						<p class='help-block' style='margin-bottom:0;'>Kosongkan jika foto tidak diganti.</p>";
+			if (!empty($rw['foto'])) {
+				echo "<div style='margin-top:8px;'><a href='images/".htmlspecialchars($rw['foto'])."' target='_blank'><img src='images/".htmlspecialchars($rw['foto'])."' alt='Foto Riwayat' style='max-width:100px; max-height:100px; border:1px solid #ddd;'></a></div>";
+			}
+			echo "
 					</div>
 				</div>
 				<div class='form-group'>

@@ -17,6 +17,26 @@ switch($_GET['act']){
 	$stmt = $db->prepare("SELECT * FROM setheader WHERE unit = ? LIMIT 1");
 	$stmt->execute([$_SESSION['unit']]);
 	$r = $stmt->fetch(PDO::FETCH_ASSOC);
+	if (!$r) {
+		$r = [
+			'id_setheader' => '',
+			'satu' => '',
+			'dua' => '',
+			'tiga' => '',
+			'empat' => '',
+			'lima' => '',
+			'enam' => '',
+			'tujuh' => '',
+			'delapan' => '',
+			'sembilan' => '',
+			'sepuluh' => '',
+			'sebelas' => '',
+			'duabelas' => '',
+			'tigabelas' => '',
+			'logo' => '',
+			'tandatangan' => ''
+		];
+	}
 			
 		echo "
 		  <div class='box box-primary box-solid'>
