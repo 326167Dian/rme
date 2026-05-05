@@ -15,10 +15,8 @@ if ($_GET['action'] == "table_data") {
         8 => 'id_cekdarah'
     );
 
-    $unit = isset($_SESSION['unit']) ? $_SESSION['unit'] : '';
-
-    $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c WHERE c.unit = ?");
-    $querycount->execute([$unit]);
+    $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c");
+    $querycount->execute();
     $datacount = $querycount->fetch(PDO::FETCH_ASSOC);
 
     $totalData = $datacount['jumlah'];
@@ -39,29 +37,27 @@ if ($_GET['action'] == "table_data") {
     }
 
     if (empty($_POST['search']['value'])) {
-        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE c.unit = ? ORDER BY $order $dir LIMIT :limit OFFSET :start");
-        $query->bindValue(1, $unit, PDO::PARAM_STR);
+        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan ORDER BY $order $dir LIMIT :limit OFFSET :start");
         $query->bindValue(':limit', $limit, PDO::PARAM_INT);
         $query->bindValue(':start', $start, PDO::PARAM_INT);
         $query->execute();
     } else {
         $search = $_POST['search']['value'];
         $searchLike = '%' . $search . '%';
-        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE c.unit = ? AND (p.nm_pelanggan LIKE ? OR c.petugas LIKE ? OR c.gula LIKE ? OR c.asamurat LIKE ? OR c.kolesterol LIKE ? OR c.tensi LIKE ? OR c.waktu LIKE ?) ORDER BY $order $dir LIMIT :limit OFFSET :start");
-        $query->bindValue(1, $unit, PDO::PARAM_STR);
+        $query = $db->prepare("SELECT c.*, p.nm_pelanggan FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE (p.nm_pelanggan LIKE ? OR c.petugas LIKE ? OR c.gula LIKE ? OR c.asamurat LIKE ? OR c.kolesterol LIKE ? OR c.tensi LIKE ? OR c.waktu LIKE ?) ORDER BY $order $dir LIMIT :limit OFFSET :start");
+        $query->bindValue(1, $searchLike, PDO::PARAM_STR);
         $query->bindValue(2, $searchLike, PDO::PARAM_STR);
         $query->bindValue(3, $searchLike, PDO::PARAM_STR);
         $query->bindValue(4, $searchLike, PDO::PARAM_STR);
         $query->bindValue(5, $searchLike, PDO::PARAM_STR);
         $query->bindValue(6, $searchLike, PDO::PARAM_STR);
         $query->bindValue(7, $searchLike, PDO::PARAM_STR);
-        $query->bindValue(8, $searchLike, PDO::PARAM_STR);
         $query->bindValue(':limit', $limit, PDO::PARAM_INT);
         $query->bindValue(':start', $start, PDO::PARAM_INT);
         $query->execute();
 
-        $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE c.unit = ? AND (p.nm_pelanggan LIKE ? OR c.petugas LIKE ? OR c.gula LIKE ? OR c.asamurat LIKE ? OR c.kolesterol LIKE ? OR c.tensi LIKE ? OR c.waktu LIKE ?)");
-        $querycount->execute([$unit, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike]);
+        $querycount = $db->prepare("SELECT count(c.id_cekdarah) as jumlah FROM cekdarah c LEFT JOIN pelanggan p ON p.id_pelanggan = c.id_pelanggan WHERE (p.nm_pelanggan LIKE ? OR c.petugas LIKE ? OR c.gula LIKE ? OR c.asamurat LIKE ? OR c.kolesterol LIKE ? OR c.tensi LIKE ? OR c.waktu LIKE ?)");
+        $querycount->execute([$searchLike, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike]);
         $datacount = $querycount->fetch(PDO::FETCH_ASSOC);
         $totalFiltered = $datacount['jumlah'];
     }

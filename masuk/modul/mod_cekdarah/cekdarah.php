@@ -57,7 +57,7 @@ switch($_GET['act']){
 	
 	case "tambah":
         $petugas = $_SESSION['namalengkap'];
-        $tglharini = date('Y-m-d H-i-s');
+        $tglharini = date('Y-m-d H:i:s');
 		$id_pelanggan = 0;
 		if (isset($_GET['id_pelanggan'])) {
 			$id_pelanggan = intval($_GET['id_pelanggan']);
