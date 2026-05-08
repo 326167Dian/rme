@@ -30,6 +30,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					</div><!-- /.box-tools -->
 				</div>
 				<div class="box-body table-responsive">
+					<a class='btn btn-success btn-flat' href='?module=swamedikasi&act=petugas_swamedikasi'>Rekap Petugas Swamedikasi </a>
 					<!--<a class='btn  btn-success btn-flat' href='?module=pelanggan&act=tambah'>TAMBAH</a>-->
 					<!--<a class='btn btn-primary btn-flat' href='?module=konseling'>KONSELING</a>-->
 					<!--<a class='btn btn-warning btn-flat' href='?module=meso'>MESO</a>-->
@@ -45,7 +46,6 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 							<tr>
         						<th>No</th>
         						<th>Pelanggan</th>
-							<th>Petugas</th>
 							<th>Diagnosa</th>
         						<th>Tindakan</th>
         						<th>Saran Konsultasi</th>
@@ -100,6 +100,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					} elseif (isset($rw['id_admin']) && $rw['id_admin'] !== '' && $rw['id_admin'] !== null) {
 						$nama_petugas = 'ID: ' . (int)$rw['id_admin'];
 					}
+					$pelanggan_petugas = $nama_pelanggan . "<br><small>(" . $nama_petugas . ")</small>";
 					$diagnosa_text = isset($rw['diagnosa']) ? htmlspecialchars($rw['diagnosa']) : '-';
 					$tgl_display = '-';
 					if (!empty($rw['tgl']) && $rw['tgl'] !== '0000-00-00') {
@@ -123,8 +124,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
             				$obat_tindakan = isset($obat_map[$rw['id']]) ? implode("<br>", $obat_map[$rw['id']]) : htmlspecialchars($rw['tindakan']);
             				echo "<tr>
             					<td>$no</td>
-					<td>$nama_pelanggan</td>
-					<td>$nama_petugas</td>
+					<td>$pelanggan_petugas</td>
 					<td>$diagnosa_with_tgl</td>
             					<td>$obat_tindakan</td>
             					<td>$rw[followup]</td>
@@ -148,6 +148,79 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 
 <?php
 
+			break;
+
+		case "petugas_swamedikasi":
+			$has_pelanggan_id_admin = ($db->query("SHOW COLUMNS FROM pelanggan LIKE 'id_admin'")->rowCount() > 0);
+			$has_riwayat_id_admin = ($db->query("SHOW COLUMNS FROM riwayat_pelanggan LIKE 'id_admin'")->rowCount() > 0);
+			$has_cekdarah_id_admin = ($db->query("SHOW COLUMNS FROM cekdarah LIKE 'id_admin'")->rowCount() > 0);
+
+			$swamedikasi_subquery = "SELECT NULL AS id_admin, 0 AS total_swamedikasi WHERE 1=0";
+			if ($has_pelanggan_id_admin) {
+				$swamedikasi_subquery = "SELECT id_admin, COUNT(*) AS total_swamedikasi FROM pelanggan GROUP BY id_admin";
+			} elseif ($has_riwayat_id_admin) {
+				$swamedikasi_subquery = "SELECT id_admin, COUNT(*) AS total_swamedikasi FROM riwayat_pelanggan GROUP BY id_admin";
+			}
+
+			$cekdarah_subquery = "SELECT NULL AS id_admin, 0 AS total_cekdarah WHERE 1=0";
+			if ($has_cekdarah_id_admin) {
+				$cekdarah_subquery = "SELECT id_admin, COUNT(*) AS total_cekdarah FROM cekdarah GROUP BY id_admin";
+			}
+
+			$sql_rekap = "SELECT a.id_admin, a.nama_lengkap,
+				COALESCE(sw.total_swamedikasi, 0) AS total_swamedikasi,
+				COALESCE(cd.total_cekdarah, 0) AS total_cekdarah
+				FROM admin a
+				LEFT JOIN (".$swamedikasi_subquery.") sw ON sw.id_admin = a.id_admin
+				LEFT JOIN (".$cekdarah_subquery.") cd ON cd.id_admin = a.id_admin
+				ORDER BY a.nama_lengkap ASC";
+
+			$rekap_stmt = $db->prepare($sql_rekap);
+			$rekap_stmt->execute();
+			$rekap_rows = $rekap_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			echo "
+			<div class='box box-primary box-solid'>
+				<div class='box-header with-border'>
+					<h3 class='box-title'>REKAP PETUGAS SWAMEDIKASI</h3>
+					<div class='box-tools pull-right'>
+						<button class='btn btn-box-tool' data-widget='collapse'><i class='fa fa-minus'></i></button>
+					</div>
+				</div>
+				<div class='box-body table-responsive'>
+					<a class='btn btn-default btn-flat' href='?module=swamedikasi'>KEMBALI</a>
+					<br><br>
+					<table class='table table-bordered table-striped'>
+						<thead>
+							<tr>
+								<th>No</th>
+								<th>Nama Petugas</th>
+								<th>Swamedikasi</th>
+								<th>Cek Darah</th>
+							</tr>
+						</thead>
+						<tbody>";
+
+			$no = 1;
+			foreach ($rekap_rows as $row) {
+				$nama_petugas = htmlspecialchars($row['nama_lengkap']);
+				$total_swamedikasi = (int) $row['total_swamedikasi'];
+				$total_cekdarah = (int) $row['total_cekdarah'];
+
+				echo "<tr>
+					<td>".$no."</td>
+					<td>".$nama_petugas."</td>
+					<td>".$total_swamedikasi."</td>
+					<td>".$total_cekdarah."</td>
+				</tr>";
+				$no++;
+			}
+
+			echo "
+						</tbody>
+					</table>
+				</div>
+			</div>";
 			break;
 
 		case "tambah":

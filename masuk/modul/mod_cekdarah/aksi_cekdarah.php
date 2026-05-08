@@ -17,16 +17,23 @@ $act=$_GET['act'];
 // Input admin
 if ($module=='cekdarah' AND $act=='input_cekdarah'){
 
+  $id_admin = isset($_SESSION['id_admin']) ? intval($_SESSION['id_admin']) : 0;
+  if ($id_admin < 1) {
+    echo "<script type='text/javascript'>alert('Session admin tidak valid. Silakan login ulang.');history.go(-1);</script>";
+    exit;
+  }
+
     $stmt = $db->prepare("INSERT INTO cekdarah
                                         (id_pelanggan,
                                         gula,
                                         asamurat,
                                         kolesterol,
                                         tensi,
+                    id_admin,
                                         petugas,
                                         waktu)
-								 VALUES(?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$_POST['id_pelanggan'], $_POST['gula'], $_POST['asamurat'], $_POST['kolesterol'], $_POST['tensi'], $_POST['petugas'], $_POST['waktu']]);
+								 VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+  $stmt->execute([$_POST['id_pelanggan'], $_POST['gula'], $_POST['asamurat'], $_POST['kolesterol'], $_POST['tensi'], $id_admin, $_POST['petugas'], $_POST['waktu']]);
 										
 										
 	//echo "<script type='text/javascript'>alert('Data berhasil ditambahkan !');window.location='../../media_admin.php?module=".$module."'</script>";
@@ -36,14 +43,21 @@ if ($module=='cekdarah' AND $act=='input_cekdarah'){
 }
  //updata satuan
  elseif ($module=='cekdarah' AND $act=='update_cekdarah'){
+
+   $id_admin = isset($_SESSION['id_admin']) ? intval($_SESSION['id_admin']) : 0;
+   if ($id_admin < 1) {
+     echo "<script type='text/javascript'>alert('Session admin tidak valid. Silakan login ulang.');history.go(-1);</script>";
+     exit;
+   }
  
      $stmt = $db->prepare("UPDATE cekdarah SET 
                                         gula = ?, 
                                         asamurat = ?,
                                         kolesterol = ?,
-                                        tensi = ?
+										tensi = ?,
+										id_admin = ?
 									WHERE id_cekdarah = ?");
-    $stmt->execute([$_POST['gula'], $_POST['asamurat'], $_POST['kolesterol'], $_POST['tensi'], $_POST['id']]);
+  $stmt->execute([$_POST['gula'], $_POST['asamurat'], $_POST['kolesterol'], $_POST['tensi'], $id_admin, $_POST['id']]);
 									
 	//echo "<script type='text/javascript'>alert('Data berhasil diubah !');window.location='../../media_admin.php?module=".$module."'</script>";
 	header('location:../../media_admin.php?module='.$module);
