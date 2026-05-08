@@ -338,6 +338,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 					<tr>
 						<th>No</th>
 						<th>Tanggal</th>
+						<th>Admin Input</th>
 						<th>Diagnosa</th>
 						<th>Tindakan</th>
 						<th>Foto</th>
@@ -353,7 +354,7 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 			$tgl_from = isset($_GET['tgl_from'])? $_GET['tgl_from']:'';
 			$tgl_to = isset($_GET['tgl_to'])? $_GET['tgl_to']:date('Y-m-d',time());
 			
-			$stmt = $db->prepare("SELECT * FROM riwayat_pelanggan WHERE id_pelanggan = ? AND tgl BETWEEN ? AND ? ORDER BY tgl DESC");
+			$stmt = $db->prepare("SELECT rp.*, a.nama_lengkap AS nama_admin_input FROM riwayat_pelanggan rp LEFT JOIN admin a ON a.id_admin = rp.id_admin WHERE rp.id_pelanggan = ? AND rp.tgl BETWEEN ? AND ? ORDER BY rp.tgl DESC");
 			$stmt->execute([$_GET['id'], $tgl_from, $tgl_to]);
 			$riwayat = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			$riwayat_ids = array_map(function($x){ return (int)$x['id']; }, $riwayat);
@@ -385,9 +386,16 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 				}
 				$tgl_followup = (isset($rw['tgl_followup']))? $rw['tgl_followup']:'<button type="button" data-id="'.$rw['id'].'" class="tgl_followup btn btn-danger">Klik untuk followup</button>';
 				$created_at_local = format_pelanggan_local_datetime($rw['created_at']);
+				$nama_admin_input = '-';
+				if (!empty($rw['nama_admin_input'])) {
+					$nama_admin_input = htmlspecialchars($rw['nama_admin_input']);
+				} elseif (isset($rw['id_admin']) && $rw['id_admin'] !== '' && $rw['id_admin'] !== null) {
+					$nama_admin_input = 'ID: ' . (int)$rw['id_admin'];
+				}
 				echo "<tr>
 					<td>$no</td>
 					<td>$rw[tgl]</td>
+					<td>$nama_admin_input</td>
 					<td>$rw[diagnosa]</td>
 					<td>$obat_tindakan</td>
 					<td>$fotoCell</td>

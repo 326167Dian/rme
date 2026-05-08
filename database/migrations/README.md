@@ -10,6 +10,7 @@ Jalankan file sesuai urutan nama (timestamp di awal nama file):
 2. `20260225_add_indexes_laporan_laba_penjualan.sql`
 3. `20260225_add_indexes_byrkredit_serverside.sql`
 4. `20260225_add_indexes_stok_kritis_analisa.sql`
+5. `20260509_add_id_admin_riwayat_pelanggan.sql`
 
 ## Cara menjalankan
 
@@ -49,6 +50,12 @@ mysql -u USERNAME -p NAMA_DATABASE < database/migrations/20260223_add_indexes_si
 
 - `idx_trkasir_tgl_kd` pada tabel `trkasir(tgl_trkasir, kd_trkasir)`
 - `idx_trkasir_detail_kdtrkasir_kdbarang` pada tabel `trkasir_detail(kd_trkasir, kd_barang)`
+
+`20260509_add_id_admin_riwayat_pelanggan.sql` menambahkan dukungan pencatatan admin penginput riwayat pelanggan:
+
+- Menambahkan kolom `id_admin` pada tabel `riwayat_pelanggan`
+- Menambahkan index `idx_riwayat_pelanggan_id_admin`
+- Menambahkan foreign key `fk_riwayat_pelanggan_admin` ke tabel `admin(id_admin)`
 
 Migrasi bersifat **idempotent** (aman dijalankan ulang). Jika index sudah ada, script akan skip.
 

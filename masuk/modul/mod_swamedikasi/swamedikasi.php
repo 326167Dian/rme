@@ -45,12 +45,11 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
 							<tr>
         						<th>No</th>
         						<th>Pelanggan</th>
-        						<th>Tanggal</th>
-        						<th>Diagnosa</th>
+							<th>Petugas</th>
+							<th>Diagnosa</th>
         						<th>Tindakan</th>
         						<th>Saran Konsultasi</th>
-        						<th>Tgl Follow Up</th>
-        						<th>Follow Up oleh</th>
+							<th>Tgl Follow Up</th>
         						<th>Created</th>
         						<th>Aksi</th>
         					</tr>
@@ -68,9 +67,10 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
             			}
             			$token = $_SESSION['csrf_pelanggan'];
 			
-						$stmt = $db->prepare("SELECT rp.*, p.nm_pelanggan
+						$stmt = $db->prepare("SELECT rp.*, p.nm_pelanggan, a.nama_lengkap AS nama_petugas
 							FROM riwayat_pelanggan rp
 							LEFT JOIN pelanggan p ON p.id_pelanggan = rp.id_pelanggan
+							LEFT JOIN admin a ON a.id_admin = rp.id_admin
 							ORDER BY rp.tgl DESC");
             			$stmt->execute();
             			$riwayat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -94,19 +94,41 @@ if (empty($_SESSION['username']) and empty($_SESSION['passuser'])) {
             			$no = 1;
             			foreach($riwayat as $rw){
 					$nama_pelanggan = isset($rw['nm_pelanggan']) && $rw['nm_pelanggan'] !== '' ? htmlspecialchars($rw['nm_pelanggan']) : '-';
+					$nama_petugas = '-';
+					if (!empty($rw['nama_petugas'])) {
+						$nama_petugas = htmlspecialchars($rw['nama_petugas']);
+					} elseif (isset($rw['id_admin']) && $rw['id_admin'] !== '' && $rw['id_admin'] !== null) {
+						$nama_petugas = 'ID: ' . (int)$rw['id_admin'];
+					}
+					$diagnosa_text = isset($rw['diagnosa']) ? htmlspecialchars($rw['diagnosa']) : '-';
+					$tgl_display = '-';
+					if (!empty($rw['tgl']) && $rw['tgl'] !== '0000-00-00') {
+						$ts_tgl = strtotime($rw['tgl']);
+						if ($ts_tgl !== false) {
+							$tgl_display = date('d-m-Y', $ts_tgl);
+						} else {
+							$tgl_display = htmlspecialchars($rw['tgl']);
+						}
+					}
+					$diagnosa_with_tgl = $diagnosa_text . "<br><small>(" . $tgl_display . ")</small>";
+
+					if (!empty($rw['tgl_followup']) && $rw['tgl_followup'] !== '0000-00-00 00:00:00') {
+						$followup_name = isset($rw['followup_by']) && trim($rw['followup_by']) !== '' ? htmlspecialchars($rw['followup_by']) : '-';
+						$tgl_followup = htmlspecialchars($rw['tgl_followup']) . "<br><small>(" . $followup_name . ")</small>";
+					} else {
+						$tgl_followup = '<button type="button" data-id="'.$rw['id'].'" class="tgl_followup btn btn-danger">Klik untuk followup</button>';
+					}
             				$edit_link = "?module=swamedikasi&act=edit_riwayat&idr=".$rw['id'];
             				$delete_link = $aksi."?module=swamedikasi&act=hapus_riwayat&id=".$rw['id']."&token=".$token;
             				$obat_tindakan = isset($obat_map[$rw['id']]) ? implode("<br>", $obat_map[$rw['id']]) : htmlspecialchars($rw['tindakan']);
-            				$tgl_followup = (isset($rw['tgl_followup']))? $rw['tgl_followup']:'<button type="button" data-id="'.$rw['id'].'" class="tgl_followup btn btn-danger">Klik untuk followup</button>';
             				echo "<tr>
             					<td>$no</td>
 					<td>$nama_pelanggan</td>
-            					<td>$rw[tgl]</td>
-            					<td>$rw[diagnosa]</td>
+					<td>$nama_petugas</td>
+					<td>$diagnosa_with_tgl</td>
             					<td>$obat_tindakan</td>
             					<td>$rw[followup]</td>
             					<td>$tgl_followup</td>
-            					<td>$rw[followup_by]</td>
             					<td>$rw[created_at]</td>
             					<td>
             						<a href='".$edit_link."' title='EDIT' class='btn btn-warning btn-xs'>EDIT</a>

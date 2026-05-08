@@ -82,6 +82,22 @@ function ensure_riwayat_foto_column($db)
     $db->exec("ALTER TABLE riwayat_pelanggan ADD COLUMN foto VARCHAR(255) NULL AFTER followup");
 }
 
+function ensure_riwayat_id_admin_column($db)
+{
+    static $checked = false;
+    if ($checked) {
+        return;
+    }
+
+    $checked = true;
+    $stmt = $db->query("SHOW COLUMNS FROM riwayat_pelanggan LIKE 'id_admin'");
+    if ($stmt && $stmt->rowCount() > 0) {
+        return;
+    }
+
+    $db->exec("ALTER TABLE riwayat_pelanggan ADD COLUMN id_admin INT(11) NULL AFTER id_pelanggan");
+}
+
 function riwayat_image_upload_dir()
 {
     return realpath(__DIR__ . '/../../') . DIRECTORY_SEPARATOR . 'images';
@@ -243,6 +259,7 @@ elseif ($module=='pelanggan' AND $act=='hapus'){
 elseif ($module=='pelanggan' AND $act=='input_riwayat'){
     try {
         ensure_riwayat_foto_column($db);
+        ensure_riwayat_id_admin_column($db);
     } catch (Exception $e) {
         $_SESSION['flash'] = "<div class='alert alert-danger'>Gagal menyiapkan kolom foto: " . htmlspecialchars($e->getMessage()) . "</div>";
         header('location:../../media_admin.php?module='.$module.'&act=riwayat&id=' . intval($_POST['id_pelanggan']));
@@ -257,11 +274,18 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
     }
     // basic validation
     $id_p = intval($_POST['id_pelanggan']);
+    $id_admin = isset($_SESSION['id_admin']) ? intval($_SESSION['id_admin']) : 0;
     $tgl = $_POST['tgl'];
     $diagnosa = trim($_POST['diagnosa']);
     $obat_kd = isset($_POST['obat_kd']) ? $_POST['obat_kd'] : [];
     $aturan_pakai = isset($_POST['aturan_pakai']) ? $_POST['aturan_pakai'] : [];
     $followup = trim($_POST['followup']);
+
+    if ($id_admin < 1) {
+        $_SESSION['flash'] = "<div class='alert alert-danger'>Session admin tidak valid. Silakan login ulang.</div>";
+        header('location:../../media_admin.php?module='.$module.'&act=riwayat&id='.$id_p);
+        exit;
+    }
 
     $uploadFoto = upload_riwayat_foto('foto');
     if (!$uploadFoto['ok']) {
@@ -307,9 +331,9 @@ elseif ($module=='pelanggan' AND $act=='input_riwayat'){
         $db->beginTransaction();
         $created_at = pelanggan_current_datetime();
 
-        $stmt = $db->prepare("INSERT INTO riwayat_pelanggan(id_pelanggan, tgl, diagnosa, tindakan, followup, foto, created_at)
-                        VALUES(?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$id_p, $tgl, $diagnosa, $tindakan, $followup, $foto, $created_at]);
+        $stmt = $db->prepare("INSERT INTO riwayat_pelanggan(id_pelanggan, id_admin, tgl, diagnosa, tindakan, followup, foto, created_at)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$id_p, $id_admin, $tgl, $diagnosa, $tindakan, $followup, $foto, $created_at]);
 
         $id_riwayat = (int) $db->lastInsertId();
         $detailStmt = $db->prepare("INSERT INTO riwayat_pelanggan_obat(id_riwayat, kd_barang, nm_barang, aturan_pakai, created_at)
